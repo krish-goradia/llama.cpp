@@ -108,7 +108,6 @@ public:
 
     // for metrics
     size_t queue_tasks_deferred_size() {
-        std::unique_lock<std::mutex> lock(mutex_tasks);
         return queue_tasks_deferred.size();
     }
 

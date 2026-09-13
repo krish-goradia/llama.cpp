@@ -25,7 +25,7 @@ static bool task_resets_idle_timer(server_task_type type) {
     return type != SERVER_TASK_TYPE_METRICS;
 }
 
-int server_queue::post(server_task && task, bool /*front*/) {
+int server_queue::post(server_task && task, bool front) {
     if (task.id == -1) {
         task.id = id.fetch_add(1);
     }
@@ -36,18 +36,27 @@ int server_queue::post(server_task && task, bool /*front*/) {
         cleanup_pending_task(task.id_target);
     }
     QUE_DBG("new task, id = %d\n", task_id);
-    queue_tasks.push(std::move(task));
-    {
+    if (front) {
         std::unique_lock<std::mutex> lock(mutex_tasks);
+        queue_tasks_unhandled.push_front(std::move(task));
         if (reset_timer) {
             time_last_task = ggml_time_ms();
         }
         condition_tasks.notify_one();
+    } else {
+        queue_tasks.push(std::move(task));
+        {
+            std::unique_lock<std::mutex> lock(mutex_tasks);
+            if (reset_timer) {
+                time_last_task = ggml_time_ms();
+            }
+            condition_tasks.notify_one();
+        }
     }
     return task_id;
 }
 
-int server_queue::post(std::vector<server_task> && tasks, bool /*front*/) {
+int server_queue::post(std::vector<server_task> && tasks, bool front) {
     bool reset_timer = false;
     for (auto & task : tasks) {
         if (task.id == -1) {
@@ -59,7 +68,12 @@ int server_queue::post(std::vector<server_task> && tasks, bool /*front*/) {
         }
         reset_timer |= task_resets_idle_timer(task.type);
         QUE_DBG("new task, id = %d/%d\n", task.id, (int) tasks.size());
-        queue_tasks.push(std::move(task));
+        if (front) {
+            std::unique_lock<std::mutex> lock(mutex_tasks);
+            queue_tasks_unhandled.push_front(std::move(task));
+        } else {
+            queue_tasks.push(std::move(task));
+        }
     }
     {
         std::unique_lock<std::mutex> lock(mutex_tasks);
@@ -76,11 +90,9 @@ void server_queue::defer(server_task && task) {
         QUE_DBG("task %d was cancelled, skipping defer\n", task.id);
         return;
     }
-    std::unique_lock<std::mutex> lock(mutex_tasks);
     QUE_DBG("defer task, id = %d\n", task.id);
     queue_tasks_deferred.push_back(std::move(task));
     time_last_task = ggml_time_ms();
-    condition_tasks.notify_one();
 }
 
 int server_queue::get_new_id() {
@@ -88,7 +100,6 @@ int server_queue::get_new_id() {
 }
 
 void server_queue::pop_deferred_task(int id_slot) {
-    std::unique_lock<std::mutex> lock(mutex_tasks);
     // remove any cancelled deferred tasks first
     queue_tasks_deferred.erase(
         std::remove_if(queue_tasks_deferred.begin(), queue_tasks_deferred.end(),
@@ -101,7 +112,7 @@ void server_queue::pop_deferred_task(int id_slot) {
         for (auto it = queue_tasks_deferred.begin(); it != queue_tasks_deferred.end(); ++it) {
             if (it->id_slot == id_slot) {
                 QUE_DBG("pop deferred task (use slot %d), id_task = %d\n", id_slot, it->id);
-                queue_tasks.push(std::move(*it));
+                queue_tasks_unhandled.push_front(std::move(*it));
                 queue_tasks_deferred.erase(it);
                 found = true;
                 break;
@@ -110,12 +121,11 @@ void server_queue::pop_deferred_task(int id_slot) {
         // if no tasks found using the slot, just pop the first deferred task (default behavior)
         if (!found) {
             QUE_DBG("pop deferred task, id_task = %d\n", queue_tasks_deferred.front().id);
-            queue_tasks.push(std::move(queue_tasks_deferred.front()));
+            queue_tasks_unhandled.push_front(std::move(queue_tasks_deferred.front()));
             queue_tasks_deferred.pop_front();
         }
     }
     time_last_task = ggml_time_ms();
-    condition_tasks.notify_one();
 }
 
 void server_queue::wait_until_no_sleep() {
