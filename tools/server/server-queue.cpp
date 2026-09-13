@@ -25,55 +25,57 @@ static bool task_resets_idle_timer(server_task_type type) {
     return type != SERVER_TASK_TYPE_METRICS;
 }
 
-int server_queue::post(server_task && task, bool front) {
-    std::unique_lock<std::mutex> lock(mutex_tasks);
-    GGML_ASSERT(task.id != -1);
+int server_queue::post(server_task && task, bool /*front*/) {
+    if (task.id == -1) {
+        task.id = id.fetch_add(1);
+    }
+    const int  task_id     = task.id;
+    const bool reset_timer = task_resets_idle_timer(task.type);
     // if this is cancel task make sure to clean up pending tasks
     if (task.type == SERVER_TASK_TYPE_CANCEL) {
         cleanup_pending_task(task.id_target);
     }
-    const int  task_id     = task.id;
-    const bool reset_timer = task_resets_idle_timer(task.type);
-    QUE_DBG("new task, id = %d, front = %d\n", task_id, front);
-    if (front) {
-        queue_tasks.push_front(std::move(task));
-    } else {
-        queue_tasks.push_back(std::move(task));
+    QUE_DBG("new task, id = %d\n", task_id);
+    queue_tasks.push(std::move(task));
+    {
+        std::unique_lock<std::mutex> lock(mutex_tasks);
+        if (reset_timer) {
+            time_last_task = ggml_time_ms();
+        }
+        condition_tasks.notify_one();
     }
-    if (reset_timer) {
-        time_last_task = ggml_time_ms();
-    }
-    condition_tasks.notify_one();
     return task_id;
 }
 
-int server_queue::post(std::vector<server_task> && tasks, bool front) {
-    std::unique_lock<std::mutex> lock(mutex_tasks);
+int server_queue::post(std::vector<server_task> && tasks, bool /*front*/) {
     bool reset_timer = false;
     for (auto & task : tasks) {
         if (task.id == -1) {
-            task.id = id++;
+            task.id = id.fetch_add(1);
         }
         // if this is cancel task make sure to clean up pending tasks
         if (task.type == SERVER_TASK_TYPE_CANCEL) {
             cleanup_pending_task(task.id_target);
         }
         reset_timer |= task_resets_idle_timer(task.type);
-        QUE_DBG("new task, id = %d/%d, front = %d\n", task.id, (int) tasks.size(), front);
-        if (front) {
-            queue_tasks.push_front(std::move(task));
-        } else {
-            queue_tasks.push_back(std::move(task));
+        QUE_DBG("new task, id = %d/%d\n", task.id, (int) tasks.size());
+        queue_tasks.push(std::move(task));
+    }
+    {
+        std::unique_lock<std::mutex> lock(mutex_tasks);
+        if (reset_timer) {
+            time_last_task = ggml_time_ms();
         }
+        condition_tasks.notify_one();
     }
-    if (reset_timer) {
-        time_last_task = ggml_time_ms();
-    }
-    condition_tasks.notify_one();
     return 0;
 }
 
 void server_queue::defer(server_task && task) {
+    if (task.is_cancelled()) {
+        QUE_DBG("task %d was cancelled, skipping defer\n", task.id);
+        return;
+    }
     std::unique_lock<std::mutex> lock(mutex_tasks);
     QUE_DBG("defer task, id = %d\n", task.id);
     queue_tasks_deferred.push_back(std::move(task));
@@ -82,29 +84,33 @@ void server_queue::defer(server_task && task) {
 }
 
 int server_queue::get_new_id() {
-    std::unique_lock<std::mutex> lock(mutex_tasks);
-    int new_id = id++;
-    return new_id;
+    return id.fetch_add(1);
 }
 
 void server_queue::pop_deferred_task(int id_slot) {
     std::unique_lock<std::mutex> lock(mutex_tasks);
+    // remove any cancelled deferred tasks first
+    queue_tasks_deferred.erase(
+        std::remove_if(queue_tasks_deferred.begin(), queue_tasks_deferred.end(),
+            [](const server_task & t) { return t.is_cancelled(); }),
+        queue_tasks_deferred.end());
+
     if (!queue_tasks_deferred.empty()) {
         // try to find a task that uses the specified slot
         bool found = false;
         for (auto it = queue_tasks_deferred.begin(); it != queue_tasks_deferred.end(); ++it) {
             if (it->id_slot == id_slot) {
                 QUE_DBG("pop deferred task (use slot %d), id_task = %d\n", id_slot, it->id);
-                queue_tasks.emplace_front(std::move(*it));
+                queue_tasks.push(std::move(*it));
                 queue_tasks_deferred.erase(it);
                 found = true;
                 break;
             }
         }
-        // if not tasks found using the slot, just pop the first deferred task (default behavior)
+        // if no tasks found using the slot, just pop the first deferred task (default behavior)
         if (!found) {
             QUE_DBG("pop deferred task, id_task = %d\n", queue_tasks_deferred.front().id);
-            queue_tasks.emplace_front(std::move(queue_tasks_deferred.front()));
+            queue_tasks.push(std::move(queue_tasks_deferred.front()));
             queue_tasks_deferred.pop_front();
         }
     }
@@ -136,28 +142,61 @@ void server_queue::terminate() {
 }
 
 bool server_queue::process_new_tasks(bool is_yielding) {
-    while (true) {
-        std::unique_lock<std::mutex> lock(mutex_tasks);
-        if (!running) {
-            QUE_DBG("%s", "terminate\n");
-            return true;
+    // 1. Process unhandled tasks from previous yield (thread-local)
+    if (!queue_tasks_unhandled.empty()) {
+        std::deque<server_task> remaining;
+        while (!queue_tasks_unhandled.empty()) {
+            {
+                std::unique_lock<std::mutex> lock(mutex_tasks);
+                if (!running) {
+                    QUE_DBG("%s", "terminate\n");
+                    return true;
+                }
+            }
+            server_task task = std::move(queue_tasks_unhandled.front());
+            queue_tasks_unhandled.pop_front();
+
+            if (task.is_cancelled()) {
+                QUE_DBG("task %d was cancelled, discarding in O(1)\n", task.id);
+                continue;
+            }
+
+            QUE_DBG("processing unhandled task, id = %d\n", task.id);
+            if (!callback_new_task(std::move(task), is_yielding)) {
+                GGML_ASSERT(is_yielding && "a task can only be declined while yielding");
+                QUE_DBG("unhandled task declined again, id = %d\n", task.id);
+                remaining.push_back(std::move(task));
+            }
         }
-        if (queue_tasks.empty()) {
-            return false;
+        queue_tasks_unhandled = std::move(remaining);
+    }
+
+    // 2. Drain lock-free MPSC queue
+    server_task task;
+    while (queue_tasks.pop(task)) {
+        {
+            std::unique_lock<std::mutex> lock(mutex_tasks);
+            if (!running) {
+                QUE_DBG("%s", "terminate\n");
+                return true;
+            }
         }
-        server_task task = std::move(queue_tasks.front());
-        queue_tasks.pop_front();
-        lock.unlock();
+
+        if (task.is_cancelled()) {
+            QUE_DBG("task %d was cancelled, discarding in O(1)\n", task.id);
+            continue;
+        }
 
         QUE_DBG("processing task, id = %d\n", task.id);
         if (!callback_new_task(std::move(task), is_yielding)) {
             // set it aside, do not put it back in the queue, else we offer it again in a loop
             GGML_ASSERT(is_yielding && "a task can only be declined while yielding");
             QUE_DBG("task declined, id = %d\n", task.id);
-            lock.lock();
             queue_tasks_unhandled.push_back(std::move(task));
         }
     }
+
+    return false;
 }
 
 void server_queue::worker_loop() {
@@ -250,12 +289,6 @@ void server_queue::yield_to_queue(std::function<void()> && work) {
             return !worker.busy;
         });
 
-        // put the declined tasks back, keeping their order
-        while (!queue_tasks_unhandled.empty()) {
-            queue_tasks.push_front(std::move(queue_tasks_unhandled.back()));
-            queue_tasks_unhandled.pop_back();
-        }
-
         // make sure to avoid idle timeout here
         time_last_task = ggml_time_ms();
 
@@ -307,13 +340,18 @@ void server_queue::start_loop(int64_t idle_sleep_ms) {
 
         // this will run the main inference process for all slots
         const int64_t t_update_slots = ggml_time_ms();
-        callback_update_slots();
+        const bool has_active_slots = callback_update_slots ? callback_update_slots() : false;
         {
             // update_slots() may take a while to finish, we need to make sure it's not counted as idle
             // shift instead of reset, so that non-task_resets_idle_timer tasks do not delay the sleep
             std::unique_lock<std::mutex> lock(mutex_tasks);
             const int64_t now = ggml_time_ms();
             time_last_task = std::min(now, time_last_task + (now - t_update_slots));
+        }
+
+        // if slots are still processing or new tasks arrived, immediately loop to next decode pass without sleeping
+        if (has_active_slots || !queue_tasks.empty()) {
+            continue;
         }
 
         QUE_DBG("%s", "waiting for new tasks\n");
@@ -370,13 +408,10 @@ void server_queue::cleanup_pending_task(int id_target) {
     auto rm_func = [id_target](const server_task & task) {
         return task.id == id_target;
     };
-    queue_tasks.erase(
-        std::remove_if(queue_tasks.begin(),           queue_tasks.end(),           rm_func),
-        queue_tasks.end());
     queue_tasks_deferred.erase(
         std::remove_if(queue_tasks_deferred.begin(),  queue_tasks_deferred.end(),  rm_func),
         queue_tasks_deferred.end());
-    // a task declined while yielding is not in queue_tasks yet, but it can still be cancelled
+    // a task declined while yielding is in queue_tasks_unhandled
     queue_tasks_unhandled.erase(
         std::remove_if(queue_tasks_unhandled.begin(), queue_tasks_unhandled.end(), rm_func),
         queue_tasks_unhandled.end());
@@ -515,6 +550,9 @@ void server_response::terminate() {
 void server_response_reader::post_task(server_task && task, bool front) {
     GGML_ASSERT(id_tasks.empty() && "post_task() can only be called once per reader");
     GGML_ASSERT(!task.is_parent() && "not supported, use post_tasks() instead");
+    if (!task.cancel_token) {
+        task.cancel_token = cancel_token;
+    }
     task.index = 0;
     id_tasks.insert(task.id);
     states.push_back(task.create_state());
@@ -528,10 +566,16 @@ void server_response_reader::post_tasks(std::vector<server_task> && tasks, bool 
     states.reserve(tasks.size());
     size_t index = 0;
     for (auto & task : tasks) {
+        if (!task.cancel_token) {
+            task.cancel_token = cancel_token;
+        }
         task.index = index++;
         states.push_back(task.create_state());
         // for child tasks
         for (auto & child_task : task.child_tasks) {
+            if (!child_task.cancel_token) {
+                child_task.cancel_token = cancel_token;
+            }
             child_task.index = index++;
             states.push_back(child_task.create_state());
         }
@@ -600,6 +644,9 @@ server_response_reader::batch_response server_response_reader::wait_for_all(cons
 }
 
 void server_response_reader::stop() {
+    if (cancel_token) {
+        cancel_token->store(true, std::memory_order_relaxed);
+    }
     queue_results.remove_waiting_task_ids(id_tasks);
     if (has_next() && !cancelled) {
         // if tasks is not finished yet, cancel them
@@ -610,10 +657,11 @@ void server_response_reader::stop() {
             SRV_WRN("cancel task, id_task = %d\n", id_task);
             server_task task(SERVER_TASK_TYPE_CANCEL);
             task.id_target = id_task;
+            task.cancel_token = cancel_token;
             queue_results.remove_waiting_task_id(id_task);
             cancel_tasks.push_back(std::move(task));
         }
-        // push to beginning of the queue, so it has highest priority
+        // push to queue so active slots can detect cancellation
         queue_tasks.post(std::move(cancel_tasks), true);
     } else {
         SRV_DBG("%s", "all tasks already finished, no need to cancel\n");

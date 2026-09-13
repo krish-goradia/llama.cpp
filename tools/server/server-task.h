@@ -3,6 +3,8 @@
 #include "common.h"
 #include "llama.h"
 
+#include <atomic>
+#include <memory>
 #include <string>
 #include <unordered_set>
 #include <list>
@@ -176,9 +178,16 @@ struct server_task {
     // used by SERVER_TASK_TYPE_SET_LORA
     std::map<int, float> set_lora; // mapping adapter ID -> scale
 
+    // atomic cancellation token for O(1) lock-free aborts
+    std::shared_ptr<std::atomic<bool>> cancel_token;
+
     server_task() = default;
 
     server_task(server_task_type type) : type(type) {}
+
+    bool is_cancelled() const {
+        return cancel_token && cancel_token->load(std::memory_order_relaxed);
+    }
 
     int32_t n_tokens() const {
         return tokens.size();
@@ -229,12 +238,13 @@ struct server_task {
     void add_child(int id_parent, int id_child) {
         server_task copy;
 
-        copy.id        = id_child;
-        copy.id_parent = id_parent;
-        copy.params    = params;
-        copy.type      = type;
-        copy.tokens    = tokens.clone();
-        copy.id_slot   = -1; // child tasks cannot specify slot
+        copy.id           = id_child;
+        copy.id_parent    = id_parent;
+        copy.params       = params;
+        copy.type         = type;
+        copy.tokens       = tokens.clone();
+        copy.id_slot      = -1; // child tasks cannot specify slot
+        copy.cancel_token = cancel_token;
 
         // use different sampling seed for each child
         // note: https://github.com/ggml-org/llama.cpp/pull/18700#discussion_r2675115723

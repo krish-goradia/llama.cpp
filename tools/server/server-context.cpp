@@ -1372,7 +1372,7 @@ private:
             return process_single_task(std::move(task), is_yielding);
         });
         queue_tasks.on_update_slots([this]() {
-            update_slots();
+            return update_slots();
         });
         queue_tasks.on_sleeping_state([this](bool sleeping) {
             handle_sleeping_state(sleeping);
@@ -1497,6 +1497,14 @@ private:
     }
 
     server_slot * get_available_slot(const server_task & task) {
+        // release any slot whose task was cancelled via atomic token
+        for (server_slot & slot : slots) {
+            if (slot.is_processing() && slot.task && slot.task->is_cancelled()) {
+                SLT_INF(slot, "task %d cancelled via atomic token, releasing slot\n", slot.task->id);
+                slot.release();
+            }
+        }
+
         server_slot * ret = nullptr;
 
         bool update_cache = false;
@@ -1776,6 +1784,12 @@ private:
     }
 
     bool process_token(completion_token_output & result, server_slot & slot) {
+        if (slot.task && slot.task->is_cancelled()) {
+            slot.stop = STOP_TYPE_LIMIT;
+            slot.has_next_token = false;
+            return false;
+        }
+
         // remember which tokens were sampled - used for repetition penalties during sampling
         const std::string token_str = result.text_to_send;
         slot.sampled = result.tok;
@@ -2302,6 +2316,11 @@ private:
 
     // returns false to decline the task, it is offered again after the decode is done
     bool process_single_task(server_task && task, bool is_yielding) {
+        if (task.is_cancelled()) {
+            SRV_DBG("task %d was cancelled, dropping in O(1)\n", task.id);
+            return true;
+        }
+
         // while yielding, an encode / decode is running and only reading the server state is safe
         if (is_yielding && task.type != SERVER_TASK_TYPE_METRICS && task.type != SERVER_TASK_TYPE_SLOT_GET) {
             SRV_DBG("decoding, decline task, id_task = %d\n", task.id);
@@ -2719,7 +2738,14 @@ private:
     };
 #endif
 
-    void update_slots() {
+    bool update_slots() {
+        // release any slot whose task was cancelled via atomic token
+        for (auto & slot : slots) {
+            if (slot.is_processing() && slot.task && slot.task->is_cancelled()) {
+                SLT_INF(slot, "task %d cancelled via atomic token, releasing slot\n", slot.task->id);
+                slot.release();
+            }
+        }
 #ifdef DEBUG_TIMINGS
         static int64_t t_prev = 0;
         int64_t t_start = ggml_time_us();
@@ -2749,7 +2775,7 @@ private:
 
                 metrics_flush_idle();
 
-                return; // skip further processing
+                return false; // skip further processing
 
             } else {
                 SRV_DBG("%s", "posting NEXT_RESPONSE\n");
@@ -2769,7 +2795,7 @@ private:
             abort_all_slots("pre_decode() failed: " + std::string(e.what()));
 
             // the batch is half-built and not rendered, skip now to avoid UB
-            return;
+            return false;
         }
 
         GGML_ASSERT(batch.slot_batched || batch.size() == 0);
@@ -2833,6 +2859,8 @@ private:
                 break; // stop any further processing
             }
         }
+
+        return true;
     }
 
     void pre_decode() {
@@ -2911,6 +2939,12 @@ private:
 
         // determine which slots are generating and drafting
         iterate(slots, [&](server_slot & slot) {
+            if (slot.is_processing() && slot.task && slot.task->is_cancelled()) {
+                SLT_INF(slot, "task %d cancelled via atomic token, releasing slot\n", slot.task->id);
+                slot.release();
+                return;
+            }
+
             if (slot.state != SLOT_STATE_GENERATING) {
                 return;
             }

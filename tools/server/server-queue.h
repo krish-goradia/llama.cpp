@@ -1,7 +1,9 @@
 #pragma once
 
 #include "server-task.h"
+#include "mpsc-queue.h"
 
+#include <atomic>
 #include <condition_variable>
 #include <deque>
 #include <exception>
@@ -14,17 +16,16 @@
 // in most cases, use server_response_reader to post new tasks and retrieve results
 struct server_queue {
 private:
-    int id = 0;
+    std::atomic<int> id{0};
     bool running  = false;
     bool sleeping = false;
     bool req_stop_sleeping = false;
     int64_t time_last_task = 0;
 
     // queues
-    std::deque<server_task> queue_tasks;
+    mpsc_queue<server_task> queue_tasks;
     std::deque<server_task> queue_tasks_deferred;
-    // tasks declined while yielding, put back in queue_tasks once the yield is done
-    // note: kept as a member so that cleanup_pending_task() can also reach them
+    // tasks declined while yielding, drained first before new tasks
     std::deque<server_task> queue_tasks_unhandled;
 
     std::mutex mutex_tasks;
@@ -43,7 +44,7 @@ private:
 
     // callback functions
     std::function<bool(server_task &&, bool)> callback_new_task;
-    std::function<void(void)>                 callback_update_slots;
+    std::function<bool(void)>                 callback_update_slots;
     std::vector<std::function<void(bool)>>    callback_sleeping_state;
 
 public:
@@ -123,7 +124,7 @@ public:
     }
 
     // Register the function to be called when all slots data is ready to be processed
-    void on_update_slots(std::function<void(void)> callback) {
+    void on_update_slots(std::function<bool(void)> callback) {
         callback_update_slots = std::move(callback);
     }
 
@@ -212,9 +213,15 @@ struct server_response_reader {
     // only used by streaming completions
     std::vector<task_result_state> states;
 
+    // atomic cancellation token shared with all tasks posted by this reader
+    std::shared_ptr<std::atomic<bool>> cancel_token;
+
     // should_stop function will be called each polling_interval_seconds
     server_response_reader(server_queue & queue_tasks, server_response & queue_results, int polling_interval_seconds)
-        : queue_tasks(queue_tasks), queue_results(queue_results), polling_interval_seconds(polling_interval_seconds) {}
+        : queue_tasks(queue_tasks),
+          queue_results(queue_results),
+          polling_interval_seconds(polling_interval_seconds),
+          cancel_token(std::make_shared<std::atomic<bool>>(false)) {}
     ~server_response_reader() {
         stop();
     }
