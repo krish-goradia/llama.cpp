@@ -35,8 +35,14 @@ public:
     mpsc_queue & operator=(mpsc_queue &&) = delete;
 
     // Multi-producer: push a new item (lock-free / wait-free)
-    void push(T value) {
+    void push(T && value) {
         node * n = new node(std::move(value));
+        node * prev = head.exchange(n, std::memory_order_acq_rel);
+        prev->next.store(n, std::memory_order_release);
+    }
+
+    void push(const T & value) {
+        node * n = new node(value);
         node * prev = head.exchange(n, std::memory_order_acq_rel);
         prev->next.store(n, std::memory_order_release);
     }
@@ -89,6 +95,7 @@ private:
         };
 
         node() {}
+        node(const T & v) : value(v) {}
         node(T && v) : value(std::move(v)) {}
         ~node() {}
     };

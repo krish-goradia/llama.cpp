@@ -160,6 +160,9 @@ struct response_channel {
 
     void push_and_notify(server_task_result_ptr && res) {
         while (!ring.try_push(std::move(res))) {
+            if (closed.load(std::memory_order_relaxed)) {
+                return; // channel closed, drop remaining outputs
+            }
             cv.notify_one();
             std::this_thread::yield();
         }
