@@ -136,6 +136,8 @@ struct task_result_state {
         bool filter_tool_calls = false);
 };
 
+struct response_channel;
+
 struct server_task {
     int id = -1; // to be filled by server_queue
 
@@ -180,6 +182,9 @@ struct server_task {
 
     // atomic cancellation token for O(1) lock-free aborts
     std::shared_ptr<std::atomic<bool>> cancel_token;
+
+    // dedicated lock-free SPSC response channel for point-to-point signaling
+    std::shared_ptr<response_channel> res_channel;
 
     server_task() = default;
 

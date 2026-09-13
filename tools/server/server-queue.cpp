@@ -421,126 +421,77 @@ void server_queue::cleanup_pending_task(int id_target) {
 // server_response
 //
 
-void server_response::add_waiting_task_id(int id_task) {
-    RES_DBG("add task %d to waiting list. current waiting = %d (before add)\n", id_task, (int) waiting_task_ids.size());
+void server_response::add_waiting_task_id(int id_task, std::shared_ptr<response_channel> chan) {
+    RES_DBG("add task %d to waiting list\n", id_task);
 
-    std::unique_lock<std::mutex> lock(mutex_results);
-    waiting_task_ids.insert(id_task);
+    std::unique_lock<std::mutex> lock(mutex_channels);
+    waiting_channels[id_task] = std::move(chan);
 }
 
-void server_response::add_waiting_task_ids(const std::unordered_set<int> & id_tasks) {
-    std::unique_lock<std::mutex> lock(mutex_results);
+void server_response::add_waiting_task_ids(const std::unordered_set<int> & id_tasks, std::shared_ptr<response_channel> chan) {
+    std::unique_lock<std::mutex> lock(mutex_channels);
 
     for (const auto & id_task : id_tasks) {
-        RES_DBG("add task %d to waiting list. current waiting = %d (before add)\n", id_task, (int) waiting_task_ids.size());
-        waiting_task_ids.insert(id_task);
+        RES_DBG("add task %d to waiting list\n", id_task);
+        waiting_channels[id_task] = chan;
     }
 }
 
 void server_response::remove_waiting_task_id(int id_task) {
-    RES_DBG("remove task %d from waiting list. current waiting = %d (before remove)\n", id_task, (int) waiting_task_ids.size());
+    RES_DBG("remove task %d from waiting list\n", id_task);
 
-    std::unique_lock<std::mutex> lock(mutex_results);
-    waiting_task_ids.erase(id_task);
-    // make sure to clean up all pending results
-    queue_results.erase(
-        std::remove_if(queue_results.begin(), queue_results.end(), [id_task](const server_task_result_ptr & res) {
-            return res->id == id_task;
-        }),
-        queue_results.end());
+    std::unique_lock<std::mutex> lock(mutex_channels);
+    waiting_channels.erase(id_task);
 }
 
 void server_response::remove_waiting_task_ids(const std::unordered_set<int> & id_tasks) {
-    std::unique_lock<std::mutex> lock(mutex_results);
+    std::unique_lock<std::mutex> lock(mutex_channels);
 
     for (const auto & id_task : id_tasks) {
-        RES_DBG("remove task %d from waiting list. current waiting = %d (before remove)\n", id_task, (int) waiting_task_ids.size());
-        waiting_task_ids.erase(id_task);
+        RES_DBG("remove task %d from waiting list\n", id_task);
+        waiting_channels.erase(id_task);
     }
-}
-
-server_task_result_ptr server_response::recv(const std::unordered_set<int> & id_tasks) {
-    while (true) {
-        std::unique_lock<std::mutex> lock(mutex_results);
-        condition_results.wait(lock, [&]{
-            if (!running) {
-                RES_DBG("%s : queue result stop\n", "recv");
-                std::terminate(); // we cannot return here since the caller is HTTP code
-            }
-            return !queue_results.empty();
-        });
-
-        for (size_t i = 0; i < queue_results.size(); i++) {
-            if (id_tasks.find(queue_results[i]->id) != id_tasks.end()) {
-                server_task_result_ptr res = std::move(queue_results[i]);
-                queue_results.erase(queue_results.begin() + i);
-                return res;
-            }
-        }
-    }
-
-    // should never reach here
-}
-
-server_task_result_ptr server_response::recv_with_timeout(const std::unordered_set<int> & id_tasks, int timeout) {
-    while (true) {
-        std::unique_lock<std::mutex> lock(mutex_results);
-
-        for (int i = 0; i < (int) queue_results.size(); i++) {
-            if (id_tasks.find(queue_results[i]->id) != id_tasks.end()) {
-                server_task_result_ptr res = std::move(queue_results[i]);
-                queue_results.erase(queue_results.begin() + i);
-                return res;
-            }
-        }
-
-        std::cv_status cr_res = condition_results.wait_for(lock, std::chrono::seconds(timeout));
-        if (!running) {
-            RES_DBG("%s : queue result stop\n", __func__);
-            std::terminate(); // we cannot return here since the caller is HTTP code
-        }
-        if (cr_res == std::cv_status::timeout) {
-            return nullptr;
-        }
-    }
-
-    // should never reach here
-}
-
-server_task_result_ptr server_response::recv(int id_task) {
-    std::unordered_set<int> id_tasks = {id_task};
-    return recv(id_tasks);
 }
 
 void server_response::send(server_task_result_ptr && result) {
     RES_DBG("sending result for task id = %d\n", result->id);
 
-    std::unique_lock<std::mutex> lock(mutex_results);
-    for (const auto & id_task : waiting_task_ids) {
-        if (result->id == id_task) {
-            RES_DBG("task id = %d pushed to result queue\n", result->id);
-
-            queue_results.emplace_back(std::move(result));
-            condition_results.notify_all();
-            return;
+    std::shared_ptr<response_channel> target_chan;
+    {
+        std::unique_lock<std::mutex> lock(mutex_channels);
+        auto it = waiting_channels.find(result->id);
+        if (it != waiting_channels.end()) {
+            target_chan = it->second;
         }
+    }
+    if (target_chan) {
+        target_chan->push_and_notify(std::move(result));
     }
 }
 
 void server_response::broadcast(server_task_result_ptr && result) {
-    std::unique_lock<std::mutex> lock(mutex_results);
-    for (const auto & id_task : waiting_task_ids) {
-        RES_DBG("task id = %d pushed to result queue\n", id_task);
-        server_task_result_ptr res_copy(result->clone());
-        res_copy->id = id_task; // override id with target task id
-        queue_results.emplace_back(std::move(res_copy));
+    std::vector<std::pair<int, std::shared_ptr<response_channel>>> targets;
+    {
+        std::unique_lock<std::mutex> lock(mutex_channels);
+        for (const auto & kv : waiting_channels) {
+            targets.push_back(kv);
+        }
     }
-    condition_results.notify_all();
+    for (auto & t : targets) {
+        server_task_result_ptr res_copy(result->clone());
+        res_copy->id = t.first;
+        t.second->push_and_notify(std::move(res_copy));
+    }
 }
 
 void server_response::terminate() {
     running = false;
-    condition_results.notify_all();
+    std::unique_lock<std::mutex> lock(mutex_channels);
+    for (auto & kv : waiting_channels) {
+        if (kv.second) {
+            kv.second->close();
+        }
+    }
 }
 
 //
@@ -553,10 +504,11 @@ void server_response_reader::post_task(server_task && task, bool front) {
     if (!task.cancel_token) {
         task.cancel_token = cancel_token;
     }
+    task.res_channel = res_channel;
     task.index = 0;
     id_tasks.insert(task.id);
     states.push_back(task.create_state());
-    queue_results.add_waiting_task_id(task.id);
+    queue_results.add_waiting_task_id(task.id, res_channel);
     queue_tasks.post(std::move(task), front);
 }
 
@@ -569,6 +521,7 @@ void server_response_reader::post_tasks(std::vector<server_task> && tasks, bool 
         if (!task.cancel_token) {
             task.cancel_token = cancel_token;
         }
+        task.res_channel = res_channel;
         task.index = index++;
         states.push_back(task.create_state());
         // for child tasks
@@ -576,12 +529,13 @@ void server_response_reader::post_tasks(std::vector<server_task> && tasks, bool 
             if (!child_task.cancel_token) {
                 child_task.cancel_token = cancel_token;
             }
+            child_task.res_channel = res_channel;
             child_task.index = index++;
             states.push_back(child_task.create_state());
         }
     }
     GGML_ASSERT(states.size() == id_tasks.size());
-    queue_results.add_waiting_task_ids(id_tasks);
+    queue_results.add_waiting_task_ids(id_tasks, res_channel);
     queue_tasks.post(std::move(tasks), front);
 }
 
@@ -589,11 +543,9 @@ bool server_response_reader::has_next() const {
     return !cancelled && received_count < id_tasks.size();
 }
 
-// return nullptr if should_stop() is true before receiving a result
-// note: if one error is received, it will stop further processing and return error result
 server_task_result_ptr server_response_reader::next(const std::function<bool()> & should_stop) {
     while (true) {
-        server_task_result_ptr result = queue_results.recv_with_timeout(id_tasks, polling_interval_seconds);
+        server_task_result_ptr result = res_channel->pop_wait(polling_interval_seconds);
         if (result == nullptr) {
             // timeout, check stop condition
             if (should_stop()) {
@@ -646,6 +598,9 @@ server_response_reader::batch_response server_response_reader::wait_for_all(cons
 void server_response_reader::stop() {
     if (cancel_token) {
         cancel_token->store(true, std::memory_order_relaxed);
+    }
+    if (res_channel) {
+        res_channel->close();
     }
     queue_results.remove_waiting_task_ids(id_tasks);
     if (has_next() && !cancelled) {

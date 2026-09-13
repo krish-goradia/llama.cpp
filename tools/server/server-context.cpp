@@ -2042,7 +2042,11 @@ private:
             res->stats = slot.stats;
         }
 
-        queue_results.send(std::move(res));
+        if (slot.task->res_channel) {
+            slot.task->res_channel->push_and_notify(std::move(res));
+        } else {
+            queue_results.send(std::move(res));
+        }
     }
 
     void send_final_response(server_slot & slot) {
@@ -2105,7 +2109,11 @@ private:
 
         res->generation_params = slot.task->params; // copy the parameters
 
-        queue_results.send(std::move(res));
+        if (slot.task->res_channel) {
+            slot.task->res_channel->push_and_notify(std::move(res));
+        } else {
+            queue_results.send(std::move(res));
+        }
     }
 
     void send_embedding(const server_slot & slot, const llama_batch & batch) {
@@ -2150,7 +2158,11 @@ private:
 
         SLT_DBG(slot, "%s", "sending embeddings\n");
 
-        queue_results.send(std::move(res));
+        if (slot.task->res_channel) {
+            slot.task->res_channel->push_and_notify(std::move(res));
+        } else {
+            queue_results.send(std::move(res));
+        }
     }
 
     void send_rerank(const server_slot & slot, const llama_batch & batch) {
@@ -2181,7 +2193,11 @@ private:
 
         SLT_DBG(slot, "sending rerank result, res.score = %f\n", res->score);
 
-        queue_results.send(std::move(res));
+        if (slot.task->res_channel) {
+            slot.task->res_channel->push_and_notify(std::move(res));
+        } else {
+            queue_results.send(std::move(res));
+        }
     }
 
     //

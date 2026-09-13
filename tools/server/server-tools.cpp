@@ -2116,7 +2116,8 @@ void server_tools::setup(const std::vector<std::string> & enabled_tools,
 
             if (stream) {
                 int id = res_id.fetch_add(1);
-                queue_res.add_waiting_task_id(id);
+                auto chan = std::make_shared<response_channel>();
+                queue_res.add_waiting_task_id(id, chan);
                 res->qr = &queue_res;
                 res->id = id;
 
@@ -2140,8 +2141,12 @@ void server_tools::setup(const std::vector<std::string> & enabled_tools,
 
                 res->content_type = "text/event-stream";
                 res->status = 200;
-                res->next   = [this, id](std::string & output) -> bool {
-                    auto result = queue_res.recv(id);
+                res->next   = [this, id, chan](std::string & output) -> bool {
+                    auto result = chan->pop_wait(30);
+                    if (!result) {
+                        queue_res.remove_waiting_task_id(id);
+                        return false;
+                    }
                     auto * r = dynamic_cast<server_tool_stream_result *>(result.get());
                     GGML_ASSERT(r != nullptr);
                     output = "data: " + safe_json_to_str(r->to_json()) + "\n\n";

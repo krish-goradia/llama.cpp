@@ -248,10 +248,125 @@ static void test_atomic_cancellation_stress(int n_producers, int items_per_produ
     std::cout << "  -> PASS\n";
 }
 
+#include "spsc-ring-buffer.h"
+
+// 5. SPSC Basic Operations Test
+static void test_spsc_basic() {
+    std::cout << "[TEST] Running test_spsc_basic...\n";
+    spsc_ring_buffer<int, 4> ring;
+
+    assert(ring.empty());
+    assert(ring.size() == 0);
+    assert(ring.capacity() == 4);
+
+    int val = 0;
+    assert(!ring.try_pop(val));
+
+    assert(ring.try_push(1));
+    assert(ring.try_push(2));
+    assert(ring.try_push(3));
+    assert(ring.try_push(4));
+
+    // Full: next push must fail
+    assert(!ring.try_push(5));
+    assert(ring.size() == 4);
+
+    assert(ring.try_pop(val) && val == 1);
+    assert(ring.try_pop(val) && val == 2);
+    assert(ring.size() == 2);
+
+    assert(ring.try_push(5));
+    assert(ring.try_push(6));
+    assert(!ring.try_push(7));
+
+    assert(ring.try_pop(val) && val == 3);
+    assert(ring.try_pop(val) && val == 4);
+    assert(ring.try_pop(val) && val == 5);
+    assert(ring.try_pop(val) && val == 6);
+    assert(!ring.try_pop(val));
+    assert(ring.empty());
+
+    (void)val;
+    std::cout << "  -> PASS\n";
+}
+
+// 6. SPSC Lifecycle & Leak Test with Move-Only Types
+static void test_spsc_lifecycle_and_leaks() {
+    std::cout << "[TEST] Running test_spsc_lifecycle_and_leaks...\n";
+    assert(instance_tracker::alive_instances.load() == 0);
+
+    {
+        spsc_ring_buffer<instance_tracker, 256> ring;
+        for (int i = 0; i < 200; i++) {
+            assert(ring.try_push(instance_tracker(i)));
+        }
+        assert(instance_tracker::alive_instances.load() == 200);
+
+        for (int i = 0; i < 100; i++) {
+            instance_tracker item(0);
+            assert(ring.try_pop(item));
+            assert(item.id == i);
+        }
+        // 100 destroyed when popped item goes out of scope, 100 remain in ring
+        assert(instance_tracker::alive_instances.load() == 100);
+    }
+    // Ring destructor must destroy the remaining 100 items
+    assert(instance_tracker::alive_instances.load() == 0);
+
+    std::cout << "  -> PASS\n";
+}
+
+// 7. SPSC High-Throughput Producer-Consumer Stress Test
+static void test_spsc_high_throughput(int64_t total_items) {
+    std::cout << "[TEST] Running test_spsc_high_throughput (" << total_items << " items)...\n";
+
+    spsc_ring_buffer<int64_t, 1024> ring;
+    std::atomic<bool> start_flag{false};
+
+    std::thread producer([&]() {
+        while (!start_flag.load(std::memory_order_acquire)) {
+            std::this_thread::yield();
+        }
+        for (int64_t i = 0; i < total_items; i++) {
+            while (!ring.try_push(int64_t(i))) {
+                std::this_thread::yield();
+            }
+        }
+    });
+
+    std::thread consumer([&]() {
+        while (!start_flag.load(std::memory_order_acquire)) {
+            std::this_thread::yield();
+        }
+        int64_t expected = 0;
+        int64_t val = 0;
+        while (expected < total_items) {
+            if (ring.try_pop(val)) {
+                assert(val == expected);
+                expected++;
+            } else {
+                std::this_thread::yield();
+            }
+        }
+    });
+
+    auto t_start = std::chrono::high_resolution_clock::now();
+    start_flag.store(true, std::memory_order_release);
+
+    producer.join();
+    consumer.join();
+
+    auto t_end = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
+    std::cout << "  -> Transferred " << total_items << " items in " << duration_ms << " ms ("
+              << (duration_ms > 0 ? (total_items * 1000 / duration_ms) : 0) << " ops/sec)\n";
+    std::cout << "  -> PASS\n";
+}
+
 int main() {
-    std::cout << "==================================================\n";
-    std::cout << " Starting Lock-Free MPSC Queue Unit & Stress Tests\n";
-    std::cout << "==================================================\n";
+    std::cout << "========================================================\n";
+    std::cout << " Starting Lock-Free MPSC & SPSC Queue Unit & Stress Tests\n";
+    std::cout << "========================================================\n";
 
     test_basic_operations();
     test_lifecycle_and_leaks();
@@ -259,8 +374,12 @@ int main() {
     test_multithreaded_mpsc(16, 50000);
     test_atomic_cancellation_stress(8, 50000);
 
-    std::cout << "==================================================\n";
-    std::cout << " All Lock-Free MPSC Queue Tests PASSED!\n";
-    std::cout << "==================================================\n";
+    test_spsc_basic();
+    test_spsc_lifecycle_and_leaks();
+    test_spsc_high_throughput(1000000);
+
+    std::cout << "========================================================\n";
+    std::cout << " All Lock-Free MPSC and SPSC Queue Tests PASSED!\n";
+    std::cout << "========================================================\n";
     return 0;
 }

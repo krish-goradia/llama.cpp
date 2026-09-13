@@ -2,6 +2,7 @@
 
 #include "server-task.h"
 #include "mpsc-queue.h"
+#include "spsc-ring-buffer.h"
 
 #include <atomic>
 #include <condition_variable>
@@ -11,6 +12,7 @@
 #include <thread>
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 
 // struct for managing server tasks
 // in most cases, use server_response_reader to post new tasks and retrieve results
@@ -150,26 +152,51 @@ private:
     void worker_stop();
 };
 
+// struct for managing dedicated point-to-point response channel
+struct response_channel {
+    spsc_ring_buffer<server_task_result_ptr, 256> ring;
+    std::mutex mtx;
+    std::condition_variable cv;
+    std::atomic<bool> closed{false};
+
+    void push_and_notify(server_task_result_ptr && res) {
+        while (!ring.try_push(std::move(res))) {
+            cv.notify_one();
+            std::this_thread::yield();
+        }
+        cv.notify_one();
+    }
+
+    server_task_result_ptr pop_wait(int timeout_seconds) {
+        server_task_result_ptr res;
+        if (ring.try_pop(res)) {
+            return res;
+        }
+        std::unique_lock<std::mutex> lock(mtx);
+        cv.wait_for(lock, std::chrono::seconds(timeout_seconds), [&] {
+            return ring.try_pop(res) || closed.load(std::memory_order_relaxed);
+        });
+        return res;
+    }
+
+    void close() {
+        closed.store(true, std::memory_order_release);
+        cv.notify_all();
+    }
+};
+
 // struct for managing server responses
 // in most cases, use server_response_reader to retrieve results
 struct server_response {
 private:
     bool running = true;
-
-    // for keeping track of all tasks waiting for the result
-    std::unordered_set<int> waiting_task_ids;
-
-    // the main result queue (using ptr for polymorphism)
-    std::vector<server_task_result_ptr> queue_results;
-
-    std::mutex mutex_results;
-    std::condition_variable condition_results;
+    std::mutex mutex_channels;
+    std::unordered_map<int, std::shared_ptr<response_channel>> waiting_channels;
 
 public:
-    // add the id_task to the list of tasks waiting for response
-    void add_waiting_task_id(int id_task);
+    void add_waiting_task_id(int id_task, std::shared_ptr<response_channel> chan);
 
-    void add_waiting_task_ids(const std::unordered_set<int> & id_tasks);
+    void add_waiting_task_ids(const std::unordered_set<int> & id_tasks, std::shared_ptr<response_channel> chan);
 
     // when the request is finished, we can remove task associated with it
     void remove_waiting_task_id(int id_task);
@@ -177,24 +204,13 @@ public:
     // remove multiple tasks from waiting list
     void remove_waiting_task_ids(const std::unordered_set<int> & id_tasks);
 
-    // This function blocks the thread until there is a response for one of the id_tasks
-    server_task_result_ptr recv(const std::unordered_set<int> & id_tasks);
-
-    // same as recv(), but have timeout in seconds
-    // if timeout is reached, nullptr is returned
-    server_task_result_ptr recv_with_timeout(const std::unordered_set<int> & id_tasks, int timeout);
-
-    // single-task version of recv()
-    server_task_result_ptr recv(int id_task);
-
     // Send a new result to a waiting id_task
     void send(server_task_result_ptr && result);
 
-    // broadcast a new result to all waiting tasks
-    // (used by router mode)
+    // broadcast a new result to all waiting tasks (used by router mode)
     void broadcast(server_task_result_ptr && result);
 
-    // terminate the waiting loop
+    // terminate all waiting channels
     void terminate();
 };
 
@@ -209,6 +225,9 @@ struct server_response_reader {
     bool cancelled = false;
     int polling_interval_seconds;
 
+    // dedicated lock-free SPSC response channel
+    std::shared_ptr<response_channel> res_channel;
+
     // tracking generation state and partial tool calls
     // only used by streaming completions
     std::vector<task_result_state> states;
@@ -221,6 +240,7 @@ struct server_response_reader {
         : queue_tasks(queue_tasks),
           queue_results(queue_results),
           polling_interval_seconds(polling_interval_seconds),
+          res_channel(std::make_shared<response_channel>()),
           cancel_token(std::make_shared<std::atomic<bool>>(false)) {}
     ~server_response_reader() {
         stop();

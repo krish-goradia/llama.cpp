@@ -1757,13 +1757,20 @@ static std::atomic<int> sse_client_id_counter = 0;
 struct server_models_sse_client {
     server_response & queue_results;
     int client_id;
+    std::shared_ptr<response_channel> res_channel;
+
     server_models_sse_client(server_response & q)
-            : queue_results(q), client_id(sse_client_id_counter.fetch_add(1, std::memory_order_relaxed)) {
+            : queue_results(q),
+              client_id(sse_client_id_counter.fetch_add(1, std::memory_order_relaxed)),
+              res_channel(std::make_shared<response_channel>()) {
         SRV_DBG("new SSE client connected, assigned client_id=%d\n", client_id);
-        queue_results.add_waiting_task_id(client_id);
+        queue_results.add_waiting_task_id(client_id, res_channel);
     }
     ~server_models_sse_client() {
         SRV_DBG("SSE client disconnected, removing client_id=%d\n", client_id);
+        if (res_channel) {
+            res_channel->close();
+        }
         queue_results.remove_waiting_task_id(client_id);
     }
 
@@ -1772,7 +1779,7 @@ struct server_models_sse_client {
     server_task_result_ptr next(const std::function<bool()> & should_stop) {
         while (true) {
             static const int http_polling_seconds = 1; // check should_stop every 1 second
-            server_task_result_ptr result = queue_results.recv_with_timeout({client_id}, http_polling_seconds);
+            server_task_result_ptr result = res_channel->pop_wait(http_polling_seconds);
             if (result == nullptr) {
                 // timeout, check stop condition
                 if (should_stop()) {
