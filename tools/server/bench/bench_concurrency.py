@@ -135,6 +135,7 @@ def run_benchmark(
     max_tokens: int,
     prompt: str,
     cancel_rate: float,
+    json_out: Optional[str] = None,
 ) -> None:
     print("==================================================================")
     print("           llama.cpp Server Concurrency & Latency Benchmark        ")
@@ -217,6 +218,22 @@ def run_benchmark(
     print(f"  Mean: {latency_stats['mean']:.2f} | p50: {latency_stats['p50']:.2f} | p95: {latency_stats['p95']:.2f} | p99: {latency_stats['p99']:.2f}")
     print("=====================================================================\n")
 
+    if json_out:
+        data = {
+            "total_time_s": total_time_s,
+            "total_requests": total_requests,
+            "successful": len(successful),
+            "cancelled": len(cancelled),
+            "failed": len(failed),
+            "total_tokens": total_tokens,
+            "tok_per_sec": tok_per_sec,
+            "ttft": ttft_stats,
+            "itl": itl_stats,
+            "duration": latency_stats,
+        }
+        with open(json_out, "w") as f:
+            json.dump(data, f, indent=2)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="llama.cpp server concurrency benchmark")
@@ -226,6 +243,7 @@ def main() -> None:
     parser.add_argument("--max-tokens", type=int, default=64, help="Max tokens per completion")
     parser.add_argument("--prompt", type=str, default="Explain the theory of relativity in simple terms.", help="Prompt text")
     parser.add_argument("-k", "--cancel", "--cancel-rate", dest="cancel_rate", type=float, default=0.0, help="Probability of client aborting connection mid-generation [0.0 - 1.0]")
+    parser.add_argument("--json-out", type=str, default=None, help="Path to write JSON benchmark metrics")
 
     args = parser.parse_args()
     run_benchmark(
@@ -235,6 +253,7 @@ def main() -> None:
         max_tokens=args.max_tokens,
         prompt=args.prompt,
         cancel_rate=args.cancel_rate,
+        json_out=args.json_out,
     )
 
 
