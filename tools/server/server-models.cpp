@@ -1781,8 +1781,8 @@ struct server_models_sse_client {
             static const int http_polling_seconds = 1; // check should_stop every 1 second
             server_task_result_ptr result = res_channel->pop_wait(http_polling_seconds);
             if (result == nullptr) {
-                // timeout, check stop condition
-                if (should_stop()) {
+                // timeout or closed channel, check stop condition
+                if (should_stop() || res_channel->closed.load(std::memory_order_relaxed)) {
                     return nullptr;
                 }
                 // continue waiting otherwise

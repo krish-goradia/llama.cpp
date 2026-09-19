@@ -18,6 +18,11 @@ This folder contains an in-depth, code-verified technical reference of the `llam
 | [**Bottleneck 3. Prefix Caching & Slot Selection**](BottleNeck3_PrefixCachingAndSlotSelection.md) | O(S x L) Prefix Scans & Trie Indexing | Analysis of naive token-by-token loops in `get_common_prefix()` across active VRAM slots and RAM prompt caches, and the Radix Tree (Prefix Trie) solution. |
 | [**Phase 1. Lock-Free MPSC Ingestion & Cancellation**](Phase1_LockFree_MPSC_Ingestion_Tier.md) | Phase 1 Implementation Reference | Complete design, implementation details, and architecture comparison against the original mutex baseline. |
 | [**Phase 1. Benchmark Results & Matrices**](Phase1_Benchmark_Results.md) | Phase 1 Benchmark Matrices | Live benchmarks across 8-client and 16-client loads (0% & 20% cancel), raw C++ stress test outputs (16M-30M ops/s), and latency analysis. |
+| [**Phase 2. Lock-Free SPSC Response Tier**](Phase2_LockFree_SPSC_Response_Tier.md) | Phase 2 Implementation Reference | Cacheline-padded (alignas(64)) SPSC ring buffers, dedicated response channels, point-to-point cv.notify_one() signaling, and 0-copy move semantics. |
+| [**Phase 2. 64-Client A/B Benchmark Results**](Phase2_AB_Benchmark_Results.md) | High-Concurrency A/B Matrices & Systems Analysis | 64-client and 16-client A/B benchmarks comparing master vs lock-free, raw outputs, +16.2% throughput gain, -24.3% p95 ITL reduction, and wakeup storm elimination. |
+| [**Phase 3. Scheduler Loop Streamlining & Queue Modernization**](Phase3_Scheduler_Loop_Streamlining.md) | Phase 3 Implementation Reference | Direct in-memory active slot cycling without dummy NEXT_RESPONSE self-messaging, FIFO std::queue modernization, and 3-tier priority task scheduling. |
+| [**Legacy. Mid-Process Cancellation Mechanism**](Legacy_Mid_Process_Cancellation_Mechanism.md) | Legacy Cancellation Architecture Reference | Deep dive into how legacy mutex code handled disconnects: polling timeouts, cleanup_pending_task O(N) queue scanning, SERVER_TASK_TYPE_CANCEL dispatch, and slot eviction. |
+| [**Reference. Questions & Answers**](questions_answers.md) | Architectural Q&A Reference | Detailed breakdowns of lock-holding during GPU compute, queue_tasks_unhandled liveloop prevention, and queue_tasks_deferred waiting room semantics. |
 
 ---
 

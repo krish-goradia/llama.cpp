@@ -6,9 +6,9 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <deque>
 #include <exception>
 #include <mutex>
+#include <queue>
 #include <thread>
 #include <vector>
 #include <unordered_set>
@@ -26,9 +26,9 @@ private:
 
     // queues
     mpsc_queue<server_task> queue_tasks;
-    std::deque<server_task> queue_tasks_deferred;
+    std::queue<server_task> queue_tasks_deferred;
     // tasks declined while yielding, drained first before new tasks
-    std::deque<server_task> queue_tasks_unhandled;
+    std::queue<server_task> queue_tasks_unhandled;
 
     std::mutex mutex_tasks;
     std::condition_variable condition_tasks;
@@ -139,8 +139,6 @@ public:
     }
 
 private:
-    void cleanup_pending_task(int id_target);
-
     // process all pending tasks in the queue
     // returns true if the queue is terminated, false if there is no more task to process
     // while yielding, declined tasks are moved to queue_tasks_unhandled

@@ -2458,10 +2458,6 @@ private:
 
                     queue_results.send(std::move(res));
                 } break;
-            case SERVER_TASK_TYPE_NEXT_RESPONSE:
-                {
-                    // do nothing
-                } break;
             case SERVER_TASK_TYPE_METRICS:
                 {
                     int n_processing_slots = 0;
@@ -2792,13 +2788,6 @@ private:
                 metrics_flush_idle();
 
                 return false; // skip further processing
-
-            } else {
-                SRV_DBG("%s", "posting NEXT_RESPONSE\n");
-
-                server_task task(SERVER_TASK_TYPE_NEXT_RESPONSE);
-                task.id = queue_tasks.get_new_id();
-                queue_tasks.post(std::move(task));
             }
         }
 
