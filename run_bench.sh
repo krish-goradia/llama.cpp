@@ -23,6 +23,7 @@ CONCURRENCY="${CONCURRENCY:-8}"
 REQUESTS="${REQUESTS:-32}"
 MAX_TOKENS="${MAX_TOKENS:-64}"
 CANCEL_RATE="${CANCEL_RATE:-0.0}"
+JSON_OUT=""
 DO_BUILD=true
 RESTART_SERVER=true
 
@@ -64,6 +65,10 @@ while [[ $# -gt 0 ]]; do
     --no-build)
       DO_BUILD=false
       shift
+      ;;
+    --json-out)
+      JSON_OUT="$2"
+      shift 2
       ;;
     --keep-server)
       RESTART_SERVER=false
@@ -147,9 +152,15 @@ echo "  Cancel Rate : $CANCEL_RATE"
 echo "=================================================================="
 echo ""
 
+JSON_ARG=""
+if [ -n "$JSON_OUT" ]; then
+  JSON_ARG="--json-out $JSON_OUT"
+fi
+
 python3 tools/server/bench/bench_concurrency.py \
   --url "http://localhost:${PORT}" \
   -c "$CONCURRENCY" \
   -n "$REQUESTS" \
   --max-tokens "$MAX_TOKENS" \
-  --cancel-rate "$CANCEL_RATE"
+  --cancel-rate "$CANCEL_RATE" \
+  $JSON_ARG

@@ -157,3 +157,5 @@ AGENTS.local.md
 # My edit
 llama.cpp-master/
 my_documentation/
+ab_bench.sh
+bench_ab.sh
