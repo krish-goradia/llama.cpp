@@ -315,7 +315,6 @@ struct server_slot {
     // not in server_slot_stats to avoid copying to every task result
     std::vector<uint64_t> n_accepted_per_pos;
 
-    std::function<void(int /* id_slot */)>   callback_on_release;
     std::function<void(const server_slot &)> callback_on_reset; // called before reset()
 
     // this is for printing timings with slot progress, not part of metrics
@@ -515,8 +514,6 @@ struct server_slot {
             callback_on_reset(*this);
 
             reset();
-
-            callback_on_release(id);
         }
     }
 
@@ -1270,10 +1267,6 @@ private:
             slot.prompt.tokens.has_mtmd = mctx != nullptr;
 
             SLT_TRC(slot, "new slot, n_ctx = %d\n", slot.n_ctx);
-
-            slot.callback_on_release = [this](int id_slot) {
-                queue_tasks.pop_deferred_task(id_slot);
-            };
 
             slot.callback_on_reset = [this](const server_slot & slot) {
                 // flush the generated token stats before reset()

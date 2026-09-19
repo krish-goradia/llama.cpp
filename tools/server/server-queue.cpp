@@ -80,11 +80,6 @@ int server_queue::get_new_id() {
     return id.fetch_add(1);
 }
 
-void server_queue::pop_deferred_task(int id_slot) {
-    (void) id_slot;
-    time_last_task = ggml_time_ms();
-}
-
 void server_queue::wait_until_no_sleep() {
     std::unique_lock<std::mutex> lock(mutex_tasks);
     if (!sleeping) {
@@ -601,7 +596,6 @@ void server_response_reader::stop() {
             server_task task(SERVER_TASK_TYPE_CANCEL);
             task.id_target = id_task;
             task.cancel_token = cancel_token;
-            queue_results.remove_waiting_task_id(id_task);
             cancel_tasks.push_back(std::move(task));
         }
         // push to queue so active slots can detect cancellation
