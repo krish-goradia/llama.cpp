@@ -106,35 +106,35 @@ void server_queue::terminate() {
 bool server_queue::process_new_tasks(bool is_yielding) {
     // 1. Process deferred tasks if not yielding (highest priority for available slots)
     if (!is_yielding && !queue_tasks_deferred.empty()) {
-        std::queue<server_task> remaining_deferred;
-        while (!queue_tasks_deferred.empty()) {
-            {
-                std::unique_lock<std::mutex> lock(mutex_tasks);
-                if (!running) {
-                    QUE_DBG("%s", "terminate\n");
-                    return true;
+        const bool slots_available = callback_has_free_slots ? callback_has_free_slots() : true;
+        if (slots_available) {
+            const size_t n_deferred = queue_tasks_deferred.size();
+            for (size_t i = 0; i < n_deferred && !queue_tasks_deferred.empty(); ++i) {
+                {
+                    std::unique_lock<std::mutex> lock(mutex_tasks);
+                    if (!running) {
+                        QUE_DBG("%s", "terminate\n");
+                        return true;
+                    }
                 }
-            }
-            server_task task = std::move(queue_tasks_deferred.front());
-            queue_tasks_deferred.pop();
+                server_task task = std::move(queue_tasks_deferred.front());
+                queue_tasks_deferred.pop();
 
-            if (task.is_cancelled()) {
-                QUE_DBG("deferred task %d was cancelled, discarding in O(1)\n", task.id);
-                continue;
-            }
-
-            QUE_DBG("processing deferred task, id = %d\n", task.id);
-            if (!callback_new_task(std::move(task), is_yielding)) {
-                // All slots are busy, keep remaining tasks in deferred
-                remaining_deferred.push(std::move(task));
-                while (!queue_tasks_deferred.empty()) {
-                    remaining_deferred.push(std::move(queue_tasks_deferred.front()));
-                    queue_tasks_deferred.pop();
+                if (task.is_cancelled()) {
+                    QUE_DBG("deferred task %d was cancelled, discarding in O(1)\n", task.id);
+                    continue;
                 }
-                break;
+
+                QUE_DBG("processing deferred task, id = %d\n", task.id);
+                if (!callback_new_task(std::move(task), is_yielding)) {
+                    // Task could not be launched, stop checking remaining deferred tasks
+                    break;
+                }
+                if (callback_has_free_slots && !callback_has_free_slots()) {
+                    break;
+                }
             }
         }
-        queue_tasks_deferred = std::move(remaining_deferred);
     }
 
     // 2. Process unhandled tasks from previous yield (thread-local)
@@ -158,9 +158,10 @@ bool server_queue::process_new_tasks(bool is_yielding) {
 
             QUE_DBG("processing unhandled task, id = %d\n", task.id);
             if (!callback_new_task(std::move(task), is_yielding)) {
-                GGML_ASSERT(is_yielding && "a task can only be declined while yielding");
-                QUE_DBG("unhandled task declined again, id = %d\n", task.id);
-                remaining.push(std::move(task));
+                if (is_yielding) {
+                    QUE_DBG("unhandled task declined again, id = %d\n", task.id);
+                    remaining.push(std::move(task));
+                }
             }
         }
         queue_tasks_unhandled = std::move(remaining);
@@ -187,8 +188,6 @@ bool server_queue::process_new_tasks(bool is_yielding) {
             if (is_yielding) {
                 QUE_DBG("task declined, id = %d\n", task.id);
                 queue_tasks_unhandled.push(std::move(task));
-            } else {
-                defer(std::move(task));
             }
         }
     }

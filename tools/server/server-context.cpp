@@ -1367,6 +1367,14 @@ private:
         queue_tasks.on_update_slots([this]() {
             return update_slots();
         });
+        queue_tasks.on_has_free_slots([this]() {
+            for (const auto & slot : slots) {
+                if (!slot.is_processing()) {
+                    return true;
+                }
+            }
+            return false;
+        });
         queue_tasks.on_sleeping_state([this](bool sleeping) {
             handle_sleeping_state(sleeping);
         });
@@ -2362,14 +2370,14 @@ private:
                         // if no slot is available, we defer this task for processing later
                         SRV_DBG("no slot is available, defer task, id_task = %d\n", id_task);
                         queue_tasks.defer(std::move(task));
-                        break;
+                        return false;
                     }
 
                     if (slot->is_processing()) {
                         // if requested slot is unavailable, we defer this task for processing later
                         SRV_DBG("requested slot is unavailable, defer task, id_task = %d\n", id_task);
                         queue_tasks.defer(std::move(task));
-                        break;
+                        return false;
                     }
 
                     if (task.is_parent()) {
@@ -2379,7 +2387,7 @@ private:
                         if (child_slots.size() < n_child_tasks) {
                             SRV_DBG("not enough free slots for child tasks, n_free = %zu, n_children = %zu, defer task, id_task = %d\n", child_slots.size(), n_child_tasks, id_task);
                             queue_tasks.defer(std::move(task));
-                            break;
+                            return false;
                         }
                         if (!launch_slots_with_parent_task(*slot, child_slots, std::move(task))) {
                             SRV_ERR("failed to launch slot with parent task, id_task = %d\n", id_task);

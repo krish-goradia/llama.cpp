@@ -47,6 +47,7 @@ private:
     // callback functions
     std::function<bool(server_task &&, bool)> callback_new_task;
     std::function<bool(void)>                 callback_update_slots;
+    std::function<bool(void)>                 callback_has_free_slots;
     std::vector<std::function<void(bool)>>    callback_sleeping_state;
 
 public:
@@ -123,6 +124,11 @@ public:
     // Register the function to be called when all slots data is ready to be processed
     void on_update_slots(std::function<bool(void)> callback) {
         callback_update_slots = std::move(callback);
+    }
+
+    // Register callback to check if any slot is currently available
+    void on_has_free_slots(std::function<bool(void)> callback) {
+        callback_has_free_slots = std::move(callback);
     }
 
     // Register callback for sleeping state change; multiple callbacks are allowed
