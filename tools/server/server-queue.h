@@ -9,6 +9,7 @@
 #include <deque>
 #include <exception>
 #include <mutex>
+#include <queue>
 #include <thread>
 #include <vector>
 #include <unordered_set>
@@ -26,7 +27,9 @@ private:
 
     // queues
     mpsc_queue<server_task> queue_tasks;
-    std::deque<server_task> queue_tasks_deferred;
+    std::queue<server_task> queue_tasks_deferred;
+    // pinned deferred tasks per slot (id_slot >= 0)
+    std::unordered_map<int, std::queue<server_task>> queue_tasks_pinned;
     // tasks declined while yielding, drained first before new tasks
     std::deque<server_task> queue_tasks_unhandled;
 
@@ -108,7 +111,11 @@ public:
 
     // for metrics
     size_t queue_tasks_deferred_size() {
-        return queue_tasks_deferred.size();
+        size_t total = queue_tasks_deferred.size();
+        for (const auto & kv : queue_tasks_pinned) {
+            total += kv.second.size();
+        }
+        return total;
     }
 
     //

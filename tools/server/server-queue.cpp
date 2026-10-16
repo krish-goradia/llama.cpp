@@ -91,7 +91,17 @@ void server_queue::defer(server_task && task) {
         return;
     }
     QUE_DBG("defer task, id = %d\n", task.id);
-    queue_tasks_deferred.push_back(std::move(task));
+    int target_slot = task.id_slot;
+    if (target_slot < 0 && (task.type == SERVER_TASK_TYPE_SLOT_SAVE ||
+                            task.type == SERVER_TASK_TYPE_SLOT_RESTORE ||
+                            task.type == SERVER_TASK_TYPE_SLOT_ERASE)) {
+        target_slot = task.slot_action.id_slot;
+    }
+    if (target_slot >= 0) {
+        queue_tasks_pinned[target_slot].push(std::move(task));
+    } else {
+        queue_tasks_deferred.push(std::move(task));
+    }
     time_last_task = ggml_time_ms();
 }
 
@@ -100,30 +110,36 @@ int server_queue::get_new_id() {
 }
 
 void server_queue::pop_deferred_task(int id_slot) {
-    // remove any cancelled deferred tasks first
-    queue_tasks_deferred.erase(
-        std::remove_if(queue_tasks_deferred.begin(), queue_tasks_deferred.end(),
-            [](const server_task & t) { return t.is_cancelled(); }),
-        queue_tasks_deferred.end());
-
-    if (!queue_tasks_deferred.empty()) {
-        // try to find a task that uses the specified slot
-        bool found = false;
-        for (auto it = queue_tasks_deferred.begin(); it != queue_tasks_deferred.end(); ++it) {
-            if (it->id_slot == id_slot) {
-                QUE_DBG("pop deferred task (use slot %d), id_task = %d\n", id_slot, it->id);
-                queue_tasks_unhandled.push_front(std::move(*it));
-                queue_tasks_deferred.erase(it);
-                found = true;
-                break;
+    // 1. check for task pinned to this specific slot
+    auto it = queue_tasks_pinned.find(id_slot);
+    if (it != queue_tasks_pinned.end()) {
+        auto & q = it->second;
+        while (!q.empty()) {
+            server_task task = std::move(q.front());
+            q.pop();
+            if (task.is_cancelled()) {
+                QUE_DBG("pinned task %d was cancelled, skipping\n", task.id);
+                continue;
             }
+            QUE_DBG("pop deferred pinned task (use slot %d), id_task = %d\n", id_slot, task.id);
+            queue_tasks_unhandled.push_front(std::move(task));
+            time_last_task = ggml_time_ms();
+            return;
         }
-        // if no tasks found using the slot, just pop the first deferred task (default behavior)
-        if (!found) {
-            QUE_DBG("pop deferred task, id_task = %d\n", queue_tasks_deferred.front().id);
-            queue_tasks_unhandled.push_front(std::move(queue_tasks_deferred.front()));
-            queue_tasks_deferred.pop_front();
+    }
+
+    // 2. if no pinned task, pop oldest unpinned task
+    while (!queue_tasks_deferred.empty()) {
+        server_task task = std::move(queue_tasks_deferred.front());
+        queue_tasks_deferred.pop();
+        if (task.is_cancelled()) {
+            QUE_DBG("deferred task %d was cancelled, skipping\n", task.id);
+            continue;
         }
+        QUE_DBG("pop deferred unpinned task, id_task = %d\n", task.id);
+        queue_tasks_unhandled.push_front(std::move(task));
+        time_last_task = ggml_time_ms();
+        return;
     }
     time_last_task = ggml_time_ms();
 }
@@ -360,14 +376,14 @@ void server_queue::start_loop(int64_t idle_sleep_ms) {
         }
 
         // if slots are still processing or new tasks arrived, immediately loop to next decode pass without sleeping
-        if (has_active_slots || !queue_tasks.empty()) {
+        if (has_active_slots || !queue_tasks.empty() || !queue_tasks_unhandled.empty()) {
             continue;
         }
 
         QUE_DBG("%s", "waiting for new tasks\n");
         while (true) {
             std::unique_lock<std::mutex> lock(mutex_tasks);
-            if (!running || !queue_tasks.empty()) {
+            if (!running || !queue_tasks.empty() || !queue_tasks_unhandled.empty()) {
                 break; // go back to process new tasks or terminate
             }
 
@@ -418,9 +434,6 @@ void server_queue::cleanup_pending_task(int id_target) {
     auto rm_func = [id_target](const server_task & task) {
         return task.id == id_target;
     };
-    queue_tasks_deferred.erase(
-        std::remove_if(queue_tasks_deferred.begin(),  queue_tasks_deferred.end(),  rm_func),
-        queue_tasks_deferred.end());
     // a task declined while yielding is in queue_tasks_unhandled
     queue_tasks_unhandled.erase(
         std::remove_if(queue_tasks_unhandled.begin(), queue_tasks_unhandled.end(), rm_func),
