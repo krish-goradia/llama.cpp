@@ -154,6 +154,38 @@ if [ "$DO_BUILD" = true ]; then
   echo ""
 fi
 
+wait_for_gpu_cooldown() {
+  local target_temp="${TARGET_TEMP:-45}"
+  local target_power="${TARGET_POWER:-50}"
+  local min_sleep="${COOLDOWN:-10}"
+  local max_wait=30
+  local elapsed=0
+
+  echo -ne "\n>>> Cooldown (${min_sleep}s base) & waiting for GPU stabilization (<= ${target_temp}C, <= ${target_power}W)... "
+  pkill -9 -f "llama-server" 2>/dev/null || true
+  sleep "$min_sleep"
+
+  if ! command -v nvidia-smi &>/dev/null; then
+    echo "Done."
+    return
+  fi
+
+  while [ $elapsed -lt $max_wait ]; do
+    local cur_temp=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null | head -n 1 | tr -d ' ')
+    local cur_power=$(nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits 2>/dev/null | head -n 1 | cut -d'.' -f1 | tr -d ' ')
+    if [ -n "$cur_temp" ] && [ -n "$cur_power" ]; then
+      if [ "$cur_temp" -le "$target_temp" ] && [ "$cur_power" -le "$target_power" ]; then
+        echo -e "${GREEN}Settled at ${cur_temp}C, ${cur_power}W.${RESET}"
+        sleep 2
+        return
+      fi
+    fi
+    sleep 2
+    elapsed=$((elapsed + 2))
+  done
+  echo -e "${YELLOW}Reached wait limit (${cur_temp:-?}C, ${cur_power:-?}W). Continuing.${RESET}"
+}
+
 # Function to run a single comparison case
 run_ab_case() {
   local CASE_NAME="$1"
@@ -189,9 +221,7 @@ run_ab_case() {
       --json-out "$CURRENT_JSON" \
       --no-build
 
-    echo -e "\n>>> Cooldown for ${COOLDOWN}s to stabilize CPU/GPU thermals..."
-    pkill -9 -f "llama-server" 2>/dev/null || true
-    sleep "$COOLDOWN"
+    wait_for_gpu_cooldown
 
     # Step 2: Run Legacy Master Baseline SECOND
     echo -e "${BOLD}>>> [Step 2/2] Executing Legacy Master Baseline [SECOND]...${RESET}"
@@ -210,9 +240,7 @@ run_ab_case() {
       --json-out "$MASTER_JSON" \
       --no-build
 
-    echo -e "\n>>> Cooldown for ${COOLDOWN}s..."
-    pkill -9 -f "llama-server" 2>/dev/null || true
-    sleep "$COOLDOWN"
+    wait_for_gpu_cooldown
   else
     # Standard: Run Legacy Master Baseline FIRST
     echo -e "${BOLD}>>> [Step 1/2] Executing Legacy Master Baseline [FIRST]...${RESET}"
@@ -234,9 +262,7 @@ run_ab_case() {
       --json-out "$MASTER_JSON" \
       --no-build
 
-    echo -e "\n>>> Cooldown for ${COOLDOWN}s to stabilize CPU/GPU thermals..."
-    pkill -9 -f "llama-server" 2>/dev/null || true
-    sleep "$COOLDOWN"
+    wait_for_gpu_cooldown
 
     # Step 2: Run Current Modernized Server SECOND
     echo -e "${BOLD}>>> [Step 2/2] Executing Current Modernized Server (Lock-Free) [SECOND]...${RESET}"
@@ -255,9 +281,7 @@ run_ab_case() {
       --json-out "$CURRENT_JSON" \
       --no-build
 
-    echo -e "\n>>> Cooldown for ${COOLDOWN}s..."
-    pkill -9 -f "llama-server" 2>/dev/null || true
-    sleep "$COOLDOWN"
+    wait_for_gpu_cooldown
   fi
 
   # 3. Render Formatted Expressive Comparison Table via Python Helper

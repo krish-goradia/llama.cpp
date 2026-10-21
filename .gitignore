@@ -157,3 +157,7 @@ AGENTS.local.md
 # My edit
 llama.cpp-master/
 my_documentation/
+*.sh
+*.sbatch
+*.err
+*.tar.gz
