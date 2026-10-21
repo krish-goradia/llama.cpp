@@ -31,7 +31,7 @@ private:
     // pinned deferred tasks per slot (id_slot >= 0)
     std::unordered_map<int, std::queue<server_task>> queue_tasks_pinned;
     // tasks declined while yielding, drained first before new tasks
-    std::deque<server_task> queue_tasks_unhandled;
+    std::queue<server_task> queue_tasks_unhandled;
 
     std::mutex mutex_tasks;
     std::condition_variable condition_tasks;
@@ -66,10 +66,6 @@ public:
 
     // Get the next id for creating a new task
     int get_new_id();
-
-    // Call when the state of one slot is changed, it will move one task from deferred to main queue
-    // prioritize tasks that use the specified slot (otherwise, pop the first deferred task)
-    void pop_deferred_task(int id_slot);
 
     // if sleeping, request exiting sleep state and wait until it is done
     // returns immediately if not sleeping
@@ -146,7 +142,6 @@ public:
     }
 
 private:
-    void cleanup_pending_task(int id_target);
 
     // process all pending tasks in the queue
     // returns true if the queue is terminated, false if there is no more task to process
