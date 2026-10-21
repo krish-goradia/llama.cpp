@@ -127,6 +127,8 @@ void server_queue::terminate() {
 }
 
 bool server_queue::process_new_tasks(bool is_yielding) {
+    SERVER_NVTX_RANGE("process_new_tasks");
+
     // 1. Tier 1: Process deferred tasks if not yielding (highest priority for available slots)
     if (!is_yielding) {
         if (!queue_tasks_pinned.empty()) {

@@ -21,6 +21,30 @@
 
 using json = nlohmann::ordered_json;
 
+#if defined(__has_include)
+#  if __has_include(<nvtx3/nvToolsExt.h>)
+#    include <nvtx3/nvToolsExt.h>
+#    define SERVER_HAS_NVTX 1
+#  elif __has_include(<nvToolsExt.h>)
+#    include <nvToolsExt.h>
+#    define SERVER_HAS_NVTX 1
+#  endif
+#endif
+
+#ifdef SERVER_HAS_NVTX
+struct server_nvtx_range {
+    server_nvtx_range(const char * name) {
+        nvtxRangePushA(name);
+    }
+    ~server_nvtx_range() {
+        nvtxRangePop();
+    }
+};
+#define SERVER_NVTX_RANGE(name) server_nvtx_range _nvtx_range_##__LINE__(name)
+#else
+#define SERVER_NVTX_RANGE(name)
+#endif
+
 #define SLT_DBG(slot, fmt, ...) LOG_DBG("slot %12.*s: id %2d | task %d | " fmt, 12, __func__, (slot).id, ((slot).task ? (slot).task->id : -1), __VA_ARGS__)
 #define SLT_TRC(slot, fmt, ...) LOG_TRC("slot %12.*s: id %2d | task %d | " fmt, 12, __func__, (slot).id, ((slot).task ? (slot).task->id : -1), __VA_ARGS__)
 #define SLT_INF(slot, fmt, ...) LOG_INF("slot %12.*s: id %2d | task %d | " fmt, 12, __func__, (slot).id, ((slot).task ? (slot).task->id : -1), __VA_ARGS__)

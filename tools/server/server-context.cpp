@@ -1826,7 +1826,9 @@ private:
 
             slot.add_token(result);
             if (slot.task->params.stream) {
-                send_partial_response(slot, result, false);
+                if (!send_partial_response(slot, result, false)) {
+                    return false;
+                }
             }
         }
 
@@ -1995,7 +1997,8 @@ private:
         queue_results.send(std::move(res));
     }
 
-    void send_partial_response(server_slot & slot, const completion_token_output & tkn, bool is_progress, bool is_begin = false) {
+    bool send_partial_response(server_slot & slot, const completion_token_output & tkn, bool is_progress, bool is_begin = false) {
+        SERVER_NVTX_RANGE("result_send");
         auto res = std::make_unique<server_task_result_cmpl_partial>();
 
         res->id    = slot.task->id;
@@ -2036,10 +2039,19 @@ private:
         }
 
         if (slot.task->res_channel) {
-            slot.task->res_channel->push_and_notify(std::move(res));
+            if (!slot.task->res_channel->push_and_notify(std::move(res))) {
+                SLT_WRN(slot, "client response channel full or closed, aborting task %d\n", slot.task->id);
+                if (slot.task->cancel_token) {
+                    slot.task->cancel_token->store(true, std::memory_order_relaxed);
+                }
+                slot.stop = STOP_TYPE_LIMIT;
+                slot.has_next_token = false;
+                return false;
+            }
         } else {
             queue_results.send(std::move(res));
         }
+        return true;
     }
 
     void send_final_response(server_slot & slot) {
@@ -2786,6 +2798,7 @@ private:
         }
 
         try {
+            SERVER_NVTX_RANGE("batch_build");
             scoped_timer t(t_pre_decode, n_pre_decode);
             pre_decode();
             batch.render();
@@ -2824,6 +2837,7 @@ private:
         for (int32_t off = 0; off < batch.size(); off = off_next) {
             const int32_t n_tokens = std::min(n_batch, batch.size() - off);
             try {
+                SERVER_NVTX_RANGE("llama_decode");
                 scoped_timer t(t_decode, n_decode);
                 // TODO @ngxson : maybe handle n_batch == 1 here instead of inside decode()
 
@@ -3814,6 +3828,7 @@ private:
 
             llama_token id;
             {
+                SERVER_NVTX_RANGE("sampling");
                 scoped_timer timer(t_sampl, n_sampl);
                 id = common_sampler_sample(slot.smpl.get(), slot.ctx_tgt, tok_idx);
             }

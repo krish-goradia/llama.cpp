@@ -2876,8 +2876,6 @@ struct llama_sampler_penalties : public llama_sampler_backend {
     std::vector<int32_t> host_token_ids;
     std::vector<int32_t> host_counts;
 
-    std::vector<std::pair<llama_token, int>> to_search;
-
     void copy_state(const llama_sampler_penalties & src) {
         // note: inp_token_ids/inp_counts belong to the current sampling graph
         prev        = src.prev;
@@ -2966,30 +2964,27 @@ static void llama_sampler_penalties_apply(struct llama_sampler * smpl, llama_tok
         data.logit -= float(count) * ctx->penalty_freq + float(count > 0) * ctx->penalty_present;
     };
 
-    ctx->to_search.clear();
-
-    // fast path: update candidates directly where idx == id (not shuffled)
+    // check if candidates are un-shuffled (direct index matches token id)
+    bool can_fast_path = true;
     for (const auto & it : ctx->token_count) {
         const llama_token token = it.first;
-        const int count = it.second;
-
-        assert(count > 0 && count <= ctx->penalty_last_n);
-
-        if (token >= 0 && (size_t) token < cur_p->size && cur_p->data[token].id == token) {
-            apply_penalty(cur_p->data[token], count);
-        } else {
-            ctx->to_search.push_back({ token, count });
+        if (token < 0 || (size_t) token >= cur_p->size || cur_p->data[token].id != token) {
+            can_fast_path = false;
+            break;
         }
     }
 
-    // fallback for candidates that were shuffled
-    if (!ctx->to_search.empty()) {
+    if (can_fast_path) {
+        // fast path: update candidates directly in O(N_penalized)
+        for (const auto & it : ctx->token_count) {
+            apply_penalty(cur_p->data[it.first], it.second);
+        }
+    } else {
+        // fallback for shuffled candidates: single pass over candidates with map lookup (O(V), matching legacy master)
         for (size_t i = 0; i < cur_p->size; ++i) {
-            for (const auto & item : ctx->to_search) {
-                if (cur_p->data[i].id == item.first) {
-                    apply_penalty(cur_p->data[i], item.second);
-                    break;
-                }
+            const auto it = ctx->token_count.find(cur_p->data[i].id);
+            if (it != ctx->token_count.end()) {
+                apply_penalty(cur_p->data[i], it->second);
             }
         }
     }
@@ -3342,7 +3337,6 @@ struct llama_sampler_dry {
     std::vector<int> dry_repeat_count;
     std::unordered_map<llama_token, int> dry_max_token_repeat;
     ring_buffer<llama_token> last_tokens;
-    std::vector<std::pair<llama_token, int>> to_search;
 };
 
 // Ported from Koboldcpp, original PR: https://github.com/LostRuins/koboldcpp/pull/982 (Original author: pi6am)
@@ -3607,28 +3601,27 @@ static void llama_sampler_dry_apply(struct llama_sampler * smpl, llama_token_dat
         }
     };
 
-    ctx->to_search.clear();
-
-    // Fast path: update candidates directly where idx == id (not shuffled)
+    // check if candidates are un-shuffled (direct index matches token id)
+    bool can_fast_path = true;
     for (const auto & af_kvp : ctx->dry_max_token_repeat) {
         const llama_token token = af_kvp.first;
-        const int repeat_len = af_kvp.second;
-
-        if (token >= 0 && (size_t) token < cur_p->size && cur_p->data[token].id == token) {
-            apply_dry_penalty(cur_p->data[token], repeat_len);
-        } else {
-            ctx->to_search.push_back({ token, repeat_len });
+        if (token < 0 || (size_t) token >= cur_p->size || cur_p->data[token].id != token) {
+            can_fast_path = false;
+            break;
         }
     }
 
-    // Fallback: search remaining candidates only if the array was shuffled
-    if (!ctx->to_search.empty()) {
+    if (can_fast_path) {
+        // fast path: update candidates directly in O(N_penalized)
+        for (const auto & af_kvp : ctx->dry_max_token_repeat) {
+            apply_dry_penalty(cur_p->data[af_kvp.first], af_kvp.second);
+        }
+    } else {
+        // fallback for shuffled candidates: single pass over candidates with map lookup (O(V), matching legacy master)
         for (size_t i = 0; i < cur_p->size; ++i) {
-            for (const auto & item : ctx->to_search) {
-                if (cur_p->data[i].id == item.first) {
-                    apply_dry_penalty(cur_p->data[i], item.second);
-                    break;
-                }
+            const auto it = ctx->dry_max_token_repeat.find(cur_p->data[i].id);
+            if (it != ctx->dry_max_token_repeat.end()) {
+                apply_dry_penalty(cur_p->data[i], it->second);
             }
         }
     }
@@ -3728,7 +3721,6 @@ struct llama_sampler * llama_sampler_init_dry(const struct llama_vocab * vocab, 
             /* .dry_repeat_count       = */ dry_enabled ? std::vector<int>(dry_penalty_last_n, 0) : std::vector<int>{},
             /* .dry_max_token_repeat   = */ {},
             /* .last_tokens            = */ dry_enabled ? ring_buffer<llama_token>(dry_penalty_last_n) : ring_buffer<llama_token>(0),
-            /* .to_search              = */ {},
         }
     );
 }

@@ -160,15 +160,20 @@ struct response_channel {
     std::condition_variable cv;
     std::atomic<bool> closed{false};
 
-    void push_and_notify(server_task_result_ptr && res) {
-        while (!ring.try_push(std::move(res))) {
-            if (closed.load(std::memory_order_relaxed)) {
-                return; // channel closed, drop remaining outputs
-            }
-            cv.notify_one();
-            std::this_thread::yield();
+    bool push_and_notify(server_task_result_ptr && res) {
+        if (closed.load(std::memory_order_relaxed)) {
+            return false;
         }
-        cv.notify_one();
+        if (!ring.try_push(std::move(res))) {
+            // channel full: client is too slow or stalled
+            close();
+            return false;
+        }
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            cv.notify_one();
+        }
+        return true;
     }
 
     server_task_result_ptr pop_wait(int timeout_seconds) {
@@ -185,6 +190,7 @@ struct response_channel {
 
     void close() {
         closed.store(true, std::memory_order_release);
+        std::lock_guard<std::mutex> lock(mtx);
         cv.notify_all();
     }
 };
