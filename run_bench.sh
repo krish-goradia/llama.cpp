@@ -15,17 +15,26 @@
 set -e
 
 # Default settings
-MODEL_PATH="${MODEL_PATH:-my_models/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf}"
+if [ -z "$MODEL_PATH" ]; then
+  if [ -f "my_models/3b.gguf" ]; then
+    MODEL_PATH="my_models/3b.gguf"
+  else
+    MODEL_PATH="my_models/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf"
+  fi
+fi
 PORT="${PORT:-8080}"
 SLOTS="${SLOTS:-8}"
-CTX="${CTX:-4096}"
+CTX="${CTX:-16384}"
 CONCURRENCY="${CONCURRENCY:-8}"
 REQUESTS="${REQUESTS:-32}"
 MAX_TOKENS="${MAX_TOKENS:-64}"
 CANCEL_RATE="${CANCEL_RATE:-0.0}"
+DURATION="${DURATION:-0.0}"
+RATE="${RATE:-0.0}"
 JSON_OUT=""
 DO_BUILD=true
 RESTART_SERVER=true
+SERVER_LOG="/tmp/llama_server_${USER:-bench}_$$.log"
 
 # Parse command-line flags
 while [[ $# -gt 0 ]]; do
@@ -36,6 +45,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     -n|--requests)
       REQUESTS="$2"
+      shift 2
+      ;;
+    -d|--duration)
+      DURATION="$2"
+      shift 2
+      ;;
+    -r|--rate)
+      RATE="$2"
       shift 2
       ;;
     --max-tokens)
@@ -113,10 +130,10 @@ if [ "$RESTART_SERVER" = true ]; then
     -m "$MODEL_PATH" \
     -c "$CTX" \
     -np "$SLOTS" \
-    --port "$PORT" > /tmp/llama_server_bench.log 2>&1 &
+    --port "$PORT" > "$SERVER_LOG" 2>&1 &
   
   SERVER_PID=$!
-  echo "Server started with PID: $SERVER_PID (logs at /tmp/llama_server_bench.log)"
+  echo "Server started with PID: $SERVER_PID (logs at $SERVER_LOG)"
 
   # Wait for server health endpoint to be ready
   echo "Waiting for server to initialize..."
@@ -132,7 +149,7 @@ if [ "$RESTART_SERVER" = true ]; then
   if [ "$READY" = false ]; then
     echo "ERROR: Server failed to start within 30 seconds."
     echo "--- Server Logs ---"
-    cat /tmp/llama_server_bench.log | tail -n 30
+    cat "$SERVER_LOG" | tail -n 30
     exit 1
   fi
   echo "Server is READY."
@@ -157,10 +174,22 @@ if [ -n "$JSON_OUT" ]; then
   JSON_ARG="--json-out $JSON_OUT"
 fi
 
+DURATION_ARG=""
+if [ -n "$DURATION" ] && [ "$DURATION" != "0.0" ] && [ "$DURATION" != "0" ]; then
+  DURATION_ARG="--duration $DURATION"
+fi
+
+RATE_ARG=""
+if [ -n "$RATE" ] && [ "$RATE" != "0.0" ] && [ "$RATE" != "0" ]; then
+  RATE_ARG="--rate $RATE"
+fi
+
 python3 tools/server/bench/bench_concurrency.py \
   --url "http://localhost:${PORT}" \
   -c "$CONCURRENCY" \
   -n "$REQUESTS" \
   --max-tokens "$MAX_TOKENS" \
   --cancel-rate "$CANCEL_RATE" \
-  $JSON_ARG
+  $JSON_ARG \
+  $DURATION_ARG \
+  $RATE_ARG
