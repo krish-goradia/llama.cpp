@@ -76,6 +76,9 @@ else()
 
     add_executable(llama-ui-embed embed.cpp)
     target_compile_features(llama-ui-embed PRIVATE cxx_std_17)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_link_libraries(llama-ui-embed PRIVATE stdc++fs)
+    endif()
     set_target_properties(llama-ui-embed PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
     )
