@@ -1,0 +1,2047 @@
+================================================================================
+ [Step 0] Node Diagnostics
+================================================================================
+node1
+gcc (GCC) 13.1.0
+Cuda compilation tools, release 12.8, V12.8.93
+Wed Oct 21 12:09:58 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.86.10              Driver Version: 570.86.10      CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    Off |   00000000:BD:00.0 Off |                  Off |
+| N/A   33C    P8             34W /  350W |       1MiB /  49140MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+================================================================================
+ [Step 1] Compiling Modernized phase-2 (CUDA sm_89 + AVX2, No-AMX)
+================================================================================
+-- llama.cpp version: 0.1.2-dev
+-- Warning: ccache not found - consider installing it for faster compilation or disable this warning with GGML_CCACHE=OFF
+-- CMAKE_SYSTEM_PROCESSOR: x86_64
+-- GGML_SYSTEM_ARCH: x86
+-- Including CPU backend
+-- x86 detected
+-- Adding CPU backend variant ggml-cpu: -msse4.2;-mf16c;-mfma;-mbmi2;-mavx;-mavx2 GGML_SSE42;GGML_F16C;GGML_FMA;GGML_BMI2;GGML_AVX;GGML_AVX2
+-- CUDA Toolkit found
+-- Using CMAKE_CUDA_ARCHITECTURES=89 CMAKE_CUDA_ARCHITECTURES_NATIVE=
+-- Could NOT find NCCL (missing: NCCL_LIBRARY NCCL_INCLUDE_DIR) 
+-- Warning: NCCL not found, performance for multiple CUDA GPUs will be suboptimal
+-- CUDA host compiler is GNU 8.5.0
+-- Including CUDA backend
+-- ggml version: 0.20.2
+-- ggml commit:  be511efb0
+-- Generating embedded license file for target: llama-app
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/krish.goradia/llama.cpp/build
+Consolidate compiler generated dependencies of target llama-common-base
+Consolidate compiler generated dependencies of target cpp-httplib
+Consolidate compiler generated dependencies of target llama-ui-embed
+Consolidate compiler generated dependencies of target vendor-hash
+Consolidate compiler generated dependencies of target ggml-base
+[  1%] Built target llama-common-base
+[  1%] Built target cpp-httplib
+[  2%] Built target llama-ui-embed
+[  2%] Built target vendor-hash
+[  5%] Provisioning UI assets
+[  5%] Built target ggml-base
+-- UI: HF stamp 'b10538' matches version, skipping HF fetch
+Consolidate compiler generated dependencies of target ggml-cpu
+[  8%] Built target ggml-cpu
+Consolidate compiler generated dependencies of target ggml-cuda
+[ 39%] Built target ggml-cuda
+Consolidate compiler generated dependencies of target ggml
+[ 39%] Built target ggml
+Consolidate compiler generated dependencies of target llama
+-- UI: gzip compression applied (/home/krish.goradia/llama.cpp/build/tools/ui/dist/_gzip)
+[ 78%] Built target llama
+Consolidate compiler generated dependencies of target llama-common
+Consolidate compiler generated dependencies of target mtmd
+[ 86%] Built target llama-common
+[ 95%] Built target mtmd
+Consolidate compiler generated dependencies of target server-context
+[ 98%] Built target server-context
+[ 98%] Built target llama-ui-assets
+Consolidate compiler generated dependencies of target llama-ui
+[ 98%] Built target llama-ui
+Consolidate compiler generated dependencies of target llama-server-impl
+[100%] Built target llama-server-impl
+Consolidate compiler generated dependencies of target llama-server
+[100%] Built target llama-server
+[  0%] Built target llama-common-base
+[  0%] Built target cpp-httplib
+[  3%] Built target ggml-base
+[  7%] Built target ggml-cpu
+[ 43%] Built target ggml-cuda
+[ 43%] Built target ggml
+[ 91%] Built target llama
+[100%] Built target llama-common
+Consolidate compiler generated dependencies of target test-server-queue
+[100%] Built target test-server-queue
+================================================================================
+ [Step 2] Compiling Upstream Master Baseline (CUDA sm_89 + AVX2, No-AMX)
+================================================================================
+-- llama.cpp version: 0.7.0-dev
+-- Warning: ccache not found - consider installing it for faster compilation or disable this warning with GGML_CCACHE=OFF
+-- CMAKE_SYSTEM_PROCESSOR: x86_64
+-- GGML_SYSTEM_ARCH: x86
+-- Including CPU backend
+-- x86 detected
+-- Adding CPU backend variant ggml-cpu: -msse4.2;-mf16c;-mfma;-mbmi2;-mavx;-mavx2 GGML_SSE42;GGML_F16C;GGML_FMA;GGML_BMI2;GGML_AVX;GGML_AVX2
+-- CUDA Toolkit found
+-- Using CMAKE_CUDA_ARCHITECTURES=89 CMAKE_CUDA_ARCHITECTURES_NATIVE=
+-- FlashAttention K-V type combinations: f16-f16;q4_0-q4_0;q8_0-q8_0;bf16-bf16
+-- Could NOT find NCCL (missing: NCCL_LIBRARY NCCL_INCLUDE_DIR) 
+-- Warning: NCCL not found, performance for multiple CUDA GPUs will be suboptimal
+-- CUDA host compiler is GNU 13.1.0
+-- Including CUDA backend
+-- ggml version: 0.27.0
+-- ggml commit:  f3363593f
+-- Generating embedded license file for target: llama-app
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/krish.goradia/llama.cpp/llama.cpp-master/build
+Consolidate compiler generated dependencies of target llama-common-base
+Consolidate compiler generated dependencies of target cpp-httplib
+[  1%] Provisioning UI assets
+Consolidate compiler generated dependencies of target vendor-hash
+Consolidate compiler generated dependencies of target ggml-base
+-- UI: HF stamp matches 'ggml-org/llama-ui|b11697', skipping HF fetch
+[  1%] Built target llama-common-base
+[  1%] Built target cpp-httplib
+[  4%] Built target vendor-hash
+[  6%] Built target ggml-base
+-- UI: assets unchanged, skipping embedding
+[  6%] Built target llama-ui-assets
+Consolidate compiler generated dependencies of target llama-ui
+Consolidate compiler generated dependencies of target ggml-cpu
+[  6%] Built target llama-ui
+[ 11%] Built target ggml-cpu
+Consolidate compiler generated dependencies of target ggml-cuda
+[ 51%] Built target ggml-cuda
+Consolidate compiler generated dependencies of target ggml
+[ 51%] Built target ggml
+Consolidate compiler generated dependencies of target llama
+[ 64%] Built target llama
+Consolidate compiler generated dependencies of target mtmd
+Consolidate compiler generated dependencies of target llama-common
+[ 93%] Built target mtmd
+[ 95%] Built target llama-common
+Consolidate compiler generated dependencies of target server-context
+[ 98%] Built target server-context
+Consolidate compiler generated dependencies of target llama-server-impl
+[100%] Built target llama-server-impl
+Consolidate compiler generated dependencies of target llama-server
+[100%] Built target llama-server
+================================================================================
+ [Step 3] Running Lock-Free Unit Tests
+================================================================================
+========================================================
+ Starting Lock-Free MPSC & SPSC Queue Unit & Stress Tests
+========================================================
+[TEST] Running test_basic_operations...
+  -> PASS
+[TEST] Running test_lifecycle_and_leaks...
+  -> PASS
+[TEST] Running test_multithreaded_mpsc (8 producers x 50000 items = 400000 items)...
+  -> Popped 400000 items in 20 ms (20000000 ops/sec)
+  -> PASS
+[TEST] Running test_multithreaded_mpsc (16 producers x 50000 items = 800000 items)...
+  -> Popped 800000 items in 41 ms (19512195 ops/sec)
+  -> PASS
+[TEST] Running test_atomic_cancellation_stress (8 producers x 50000 items)...
+  -> Total: 400000 | Executed: 266664 | Cancelled & Discarded in O(1): 133336
+  -> PASS
+[TEST] Running test_spsc_basic...
+  -> PASS
+[TEST] Running test_spsc_lifecycle_and_leaks...
+  -> PASS
+[TEST] Running test_spsc_high_throughput (1000000 items)...
+  -> Transferred 1000000 items in 3 ms (333333333 ops/sec)
+  -> PASS
+========================================================
+ All Lock-Free MPSC and SPSC Queue Tests PASSED!
+========================================================
+================================================================================
+ [Step 4] Running 15-Case Concurrency Benchmark Suite
+================================================================================
+>>> [1/15] Case 1: 4 Clients (0.5x Slot Load)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (4 Clients | 16 Requests | 64 MaxTok | 0% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3530003 (logs at /tmp/llama_server_krish.goradia_3529997.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 4 clients
+ Total Requests : 16
+ Max Tokens     : 64
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.32 s
+ Requests Succeeded   : 16 / 16
+ Requests Cancelled   : 0 / 16
+ Requests Failed      : 0 / 16
+ Total Tokens Emitted : 1056
+ Aggregate Throughput : 798.14 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 21.41 | p50: 21.31 | p95: 27.26 | p99: 28.03 | Max: 28.22
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 4.75 | p50: 4.83 | p95: 5.04 | p99: 6.00 | Max: 17.95
+
+### 3. Request Duration (in ms)
+  Mean: 330.06 | p50: 328.96 | p95: 338.79 | p99: 339.47
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3530162 (logs at /tmp/llama_server_krish.goradia_3530156.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 4 clients
+ Total Requests : 16
+ Max Tokens     : 64
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.31 s
+ Requests Succeeded   : 16 / 16
+ Requests Cancelled   : 0 / 16
+ Requests Failed      : 0 / 16
+ Total Tokens Emitted : 1056
+ Aggregate Throughput : 808.24 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 20.94 | p50: 20.82 | p95: 25.61 | p99: 26.22 | Max: 26.37
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 4.69 | p50: 4.81 | p95: 4.96 | p99: 5.82 | Max: 16.62
+
+### 3. Request Duration (in ms)
+  Mean: 325.83 | p50: 323.49 | p95: 335.10 | p99: 335.20
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m4 clients[0m | Requests: [1m16 total[0m | Slots: [1m8[0m | Cancel Rate: [1m0%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)              808.24 tok/s       798.14 tok/s   [31m   -1.25%  [SLOWER]    [0m
+ Total Wall Time (s)                        1.31 s             1.32 s   [31m +  1.27%  [REGRESSION][0m
+ Total Tokens Emitted                         1056               1056
+ Requests (Succ / Canc / Fail)              16/0/0             16/0/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                                20.94 ms           21.41 ms   [31m +  2.24%  [REGRESSION][0m
+    - p50 (Median)                        20.82 ms           21.31 ms   [31m +  2.34%  [REGRESSION][0m
+    - p95 (Tail)                          25.61 ms           27.26 ms   [31m +  6.43%  [REGRESSION][0m
+    - p99 (Worst Tail)                    26.22 ms           28.03 ms   [31m +  6.90%  [REGRESSION][0m
+    - Max Spike                           26.37 ms           28.22 ms   [31m +  7.02%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 4.69 ms            4.75 ms   [31m +  1.23%  [REGRESSION][0m
+    - p50 (Median)                         4.81 ms            4.83 ms   [31m +  0.44%  [REGRESSION][0m
+    - p95 (Tail Jitter)                    4.96 ms            5.04 ms   [31m +  1.65%  [REGRESSION][0m
+    - p99 (Worst Tail)                     5.82 ms            6.00 ms   [31m +  2.97%  [REGRESSION][0m
+    - Max Spike                           16.62 ms           17.95 ms   [31m +  7.97%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                               325.83 ms          330.06 ms   [31m +  1.30%  [REGRESSION][0m
+    - p50 (Median)                       323.49 ms          328.96 ms   [31m +  1.69%  [REGRESSION][0m
+    - p95 (Tail)                         335.10 ms          338.79 ms   [31m +  1.10%  [REGRESSION][0m
+    - p99 (Worst Tail)                   335.20 ms          339.47 ms   [31m +  1.27%  [REGRESSION][0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [2/15] Case 2: 8 Clients (1.0x Exact Saturation)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (8 Clients | 32 Requests | 64 MaxTok | 0% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3530335 (logs at /tmp/llama_server_krish.goradia_3530329.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 8 clients
+ Total Requests : 32
+ Max Tokens     : 64
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.87 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1129.33 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 34.26 | p50: 35.71 | p95: 38.73 | p99: 42.89 | Max: 44.74
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.65 | p50: 6.72 | p95: 7.14 | p99: 8.91 | Max: 27.25
+
+### 3. Request Duration (in ms)
+  Mean: 466.29 | p50: 466.54 | p95: 482.94 | p99: 484.52
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3530507 (logs at /tmp/llama_server_krish.goradia_3530501.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 8 clients
+ Total Requests : 32
+ Max Tokens     : 64
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.78 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1189.31 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 32.87 | p50: 33.26 | p95: 36.69 | p99: 39.79 | Max: 41.13
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.30 | p50: 6.49 | p95: 6.78 | p99: 8.48 | Max: 24.56
+
+### 3. Request Duration (in ms)
+  Mean: 442.56 | p50: 442.62 | p95: 453.64 | p99: 455.56
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m8 clients[0m | Requests: [1m32 total[0m | Slots: [1m8[0m | Cancel Rate: [1m0%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)             1189.31 tok/s      1129.33 tok/s   [31m   -5.04%  [SLOWER]    [0m
+ Total Wall Time (s)                        1.78 s             1.87 s   [31m +  5.31%  [REGRESSION][0m
+ Total Tokens Emitted                         2112               2112
+ Requests (Succ / Canc / Fail)              32/0/0             32/0/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                                32.87 ms           34.26 ms   [31m +  4.24%  [REGRESSION][0m
+    - p50 (Median)                        33.26 ms           35.71 ms   [31m +  7.39%  [REGRESSION][0m
+    - p95 (Tail)                          36.69 ms           38.73 ms   [31m +  5.56%  [REGRESSION][0m
+    - p99 (Worst Tail)                    39.79 ms           42.89 ms   [31m +  7.78%  [REGRESSION][0m
+    - Max Spike                           41.13 ms           44.74 ms   [31m +  8.79%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 6.30 ms            6.65 ms   [31m +  5.45%  [REGRESSION][0m
+    - p50 (Median)                         6.49 ms            6.72 ms   [31m +  3.48%  [REGRESSION][0m
+    - p95 (Tail Jitter)                    6.78 ms            7.14 ms   [31m +  5.24%  [REGRESSION][0m
+    - p99 (Worst Tail)                     8.48 ms            8.91 ms   [31m +  5.04%  [REGRESSION][0m
+    - Max Spike                           24.56 ms           27.25 ms   [31m + 10.95%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                               442.56 ms          466.29 ms   [31m +  5.36%  [REGRESSION][0m
+    - p50 (Median)                       442.62 ms          466.54 ms   [31m +  5.41%  [REGRESSION][0m
+    - p95 (Tail)                         453.64 ms          482.94 ms   [31m +  6.46%  [REGRESSION][0m
+    - p99 (Worst Tail)                   455.56 ms          484.52 ms   [31m +  6.36%  [REGRESSION][0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [3/15] Case 3: 16 Clients (2.0x Moderate Backlog)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (16 Clients | 32 Requests | 64 MaxTok | 0% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3530684 (logs at /tmp/llama_server_krish.goradia_3530678.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 16 clients
+ Total Requests : 32
+ Max Tokens     : 64
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.87 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1129.96 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 376.71 | p50: 491.33 | p95: 502.97 | p99: 503.58 | Max: 503.58
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.67 | p50: 6.67 | p95: 7.17 | p99: 10.38 | Max: 37.47
+
+### 3. Request Duration (in ms)
+  Mean: 810.59 | p50: 920.18 | p95: 943.46 | p99: 945.06
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3530855 (logs at /tmp/llama_server_krish.goradia_3530849.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 16 clients
+ Total Requests : 32
+ Max Tokens     : 64
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.83 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1151.58 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 375.59 | p50: 483.57 | p95: 500.62 | p99: 502.08 | Max: 502.51
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.57 | p50: 6.61 | p95: 7.08 | p99: 14.95 | Max: 35.41
+
+### 3. Request Duration (in ms)
+  Mean: 802.44 | p50: 908.77 | p95: 932.60 | p99: 934.74
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m16 clients[0m | Requests: [1m32 total[0m | Slots: [1m8[0m | Cancel Rate: [1m0%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)             1151.58 tok/s      1129.96 tok/s   [31m   -1.88%  [SLOWER]    [0m
+ Total Wall Time (s)                        1.83 s             1.87 s   [31m +  1.91%  [REGRESSION][0m
+ Total Tokens Emitted                         2112               2112
+ Requests (Succ / Canc / Fail)              32/0/0             32/0/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                               375.59 ms          376.71 ms   [31m +  0.30%  [REGRESSION][0m
+    - p50 (Median)                       483.57 ms          491.33 ms   [31m +  1.60%  [REGRESSION][0m
+    - p95 (Tail)                         500.62 ms          502.97 ms   [31m +  0.47%  [REGRESSION][0m
+    - p99 (Worst Tail)                   502.08 ms          503.58 ms   [31m +  0.30%  [REGRESSION][0m
+    - Max Spike                          502.51 ms          503.58 ms   [31m +  0.21%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 6.57 ms            6.67 ms   [31m +  1.65%  [REGRESSION][0m
+    - p50 (Median)                         6.61 ms            6.67 ms   [31m +  0.78%  [REGRESSION][0m
+    - p95 (Tail Jitter)                    7.08 ms            7.17 ms   [31m +  1.31%  [REGRESSION][0m
+    - p99 (Worst Tail)                    14.95 ms           10.38 ms   [32m  -30.55%  [IMPROVED]  [0m
+    - Max Spike                           35.41 ms           37.47 ms   [31m +  5.81%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                               802.44 ms          810.59 ms   [31m +  1.02%  [REGRESSION][0m
+    - p50 (Median)                       908.77 ms          920.18 ms   [31m +  1.26%  [REGRESSION][0m
+    - p95 (Tail)                         932.60 ms          943.46 ms   [31m +  1.16%  [REGRESSION][0m
+    - p99 (Worst Tail)                   934.74 ms          945.06 ms   [31m +  1.10%  [REGRESSION][0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [4/15] Case 4: 32 Clients (4.0x Heavy Contention)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (32 Clients | 64 Requests | 64 MaxTok | 0% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3531049 (logs at /tmp/llama_server_krish.goradia_3531043.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 32 clients
+ Total Requests : 64
+ Max Tokens     : 64
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.84 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1100.75 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 1109.85 | p50: 1464.51 | p95: 1480.17 | p99: 1481.19 | Max: 1481.53
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.85 | p50: 6.92 | p95: 7.20 | p99: 10.75 | Max: 38.84
+
+### 3. Request Duration (in ms)
+  Mean: 1555.41 | p50: 1905.29 | p95: 1923.04 | p99: 1924.10
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3531236 (logs at /tmp/llama_server_krish.goradia_3531230.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 32 clients
+ Total Requests : 64
+ Max Tokens     : 64
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.62 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1166.82 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 1042.89 | p50: 1373.18 | p95: 1390.48 | p99: 1393.44 | Max: 1393.87
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.50 | p50: 6.52 | p95: 7.34 | p99: 15.16 | Max: 35.20
+
+### 3. Request Duration (in ms)
+  Mean: 1465.37 | p50: 1798.71 | p95: 1811.34 | p99: 1812.22
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m32 clients[0m | Requests: [1m64 total[0m | Slots: [1m8[0m | Cancel Rate: [1m0%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)             1166.82 tok/s      1100.75 tok/s   [31m   -5.66%  [SLOWER]    [0m
+ Total Wall Time (s)                        3.62 s             3.84 s   [31m +  6.00%  [REGRESSION][0m
+ Total Tokens Emitted                         4224               4224
+ Requests (Succ / Canc / Fail)              64/0/0             64/0/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                              1042.89 ms         1109.85 ms   [31m +  6.42%  [REGRESSION][0m
+    - p50 (Median)                      1373.18 ms         1464.51 ms   [31m +  6.65%  [REGRESSION][0m
+    - p95 (Tail)                        1390.48 ms         1480.17 ms   [31m +  6.45%  [REGRESSION][0m
+    - p99 (Worst Tail)                  1393.44 ms         1481.19 ms   [31m +  6.30%  [REGRESSION][0m
+    - Max Spike                         1393.87 ms         1481.53 ms   [31m +  6.29%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 6.50 ms            6.85 ms   [31m +  5.46%  [REGRESSION][0m
+    - p50 (Median)                         6.52 ms            6.92 ms   [31m +  6.23%  [REGRESSION][0m
+    - p95 (Tail Jitter)                    7.34 ms            7.20 ms   [32m   -1.89%  [IMPROVED]  [0m
+    - p99 (Worst Tail)                    15.16 ms           10.75 ms   [32m  -29.06%  [IMPROVED]  [0m
+    - Max Spike                           35.20 ms           38.84 ms   [31m + 10.34%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                              1465.37 ms         1555.41 ms   [31m +  6.14%  [REGRESSION][0m
+    - p50 (Median)                      1798.71 ms         1905.29 ms   [31m +  5.93%  [REGRESSION][0m
+    - p95 (Tail)                        1811.34 ms         1923.04 ms   [31m +  6.17%  [REGRESSION][0m
+    - p99 (Worst Tail)                  1812.22 ms         1924.10 ms   [31m +  6.17%  [REGRESSION][0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [5/15] Case 5: 64 Clients (8.0x Burst Contention Storm)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (64 Clients | 64 Requests | 64 MaxTok | 0% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3531445 (logs at /tmp/llama_server_krish.goradia_3531439.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 64 clients
+ Total Requests : 64
+ Max Tokens     : 64
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.77 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1121.71 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 1662.87 | p50: 1655.62 | p95: 3290.70 | p99: 3292.03 | Max: 3292.68
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.74 | p50: 6.77 | p95: 7.16 | p99: 10.23 | Max: 35.17
+
+### 3. Request Duration (in ms)
+  Mean: 2101.10 | p50: 2102.11 | p95: 3720.71 | p99: 3722.06
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3531664 (logs at /tmp/llama_server_krish.goradia_3531658.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 64 clients
+ Total Requests : 64
+ Max Tokens     : 64
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.64 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1161.46 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 1623.37 | p50: 1624.77 | p95: 3179.30 | p99: 3181.83 | Max: 3182.33
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.53 | p50: 6.54 | p95: 7.24 | p99: 15.54 | Max: 34.07
+
+### 3. Request Duration (in ms)
+  Mean: 2047.70 | p50: 2052.77 | p95: 3588.49 | p99: 3591.01
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m64 clients[0m | Requests: [1m64 total[0m | Slots: [1m8[0m | Cancel Rate: [1m0%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)             1161.46 tok/s      1121.71 tok/s   [31m   -3.42%  [SLOWER]    [0m
+ Total Wall Time (s)                        3.64 s             3.77 s   [31m +  3.54%  [REGRESSION][0m
+ Total Tokens Emitted                         4224               4224
+ Requests (Succ / Canc / Fail)              64/0/0             64/0/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                              1623.37 ms         1662.87 ms   [31m +  2.43%  [REGRESSION][0m
+    - p50 (Median)                      1624.77 ms         1655.62 ms   [31m +  1.90%  [REGRESSION][0m
+    - p95 (Tail)                        3179.30 ms         3290.70 ms   [31m +  3.50%  [REGRESSION][0m
+    - p99 (Worst Tail)                  3181.83 ms         3292.03 ms   [31m +  3.46%  [REGRESSION][0m
+    - Max Spike                         3182.33 ms         3292.68 ms   [31m +  3.47%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 6.53 ms            6.74 ms   [31m +  3.28%  [REGRESSION][0m
+    - p50 (Median)                         6.54 ms            6.77 ms   [31m +  3.54%  [REGRESSION][0m
+    - p95 (Tail Jitter)                    7.24 ms            7.16 ms   [32m   -1.15%  [IMPROVED]  [0m
+    - p99 (Worst Tail)                    15.54 ms           10.23 ms   [32m  -34.19%  [IMPROVED]  [0m
+    - Max Spike                           34.07 ms           35.17 ms   [31m +  3.21%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                              2047.70 ms         2101.10 ms   [31m +  2.61%  [REGRESSION][0m
+    - p50 (Median)                      2052.77 ms         2102.11 ms   [31m +  2.40%  [REGRESSION][0m
+    - p95 (Tail)                        3588.49 ms         3720.71 ms   [31m +  3.68%  [REGRESSION][0m
+    - p99 (Worst Tail)                  3591.01 ms         3722.06 ms   [31m +  3.65%  [REGRESSION][0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [6/15] Case 6: 8 Clients (10% Cancel)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (8 Clients | 32 Requests | 64 MaxTok | 10% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3531897 (logs at /tmp/llama_server_krish.goradia_3531891.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 8 clients
+ Total Requests : 32
+ Max Tokens     : 64
+ Cancel Rate    : 10.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.12 s
+ Requests Succeeded   : 29 / 32
+ Requests Cancelled   : 3 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1926
+ Aggregate Throughput : 906.38 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 35.71 | p50: 37.97 | p95: 42.69 | p99: 43.12 | Max: 43.17
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 7.40 | p50: 6.93 | p95: 10.00 | p99: 10.70 | Max: 37.42
+
+### 3. Request Duration (in ms)
+  Mean: 516.49 | p50: 486.26 | p95: 662.71 | p99: 663.64
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3532068 (logs at /tmp/llama_server_krish.goradia_3532062.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 8 clients
+ Total Requests : 32
+ Max Tokens     : 64
+ Cancel Rate    : 10.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.30 s
+ Requests Succeeded   : 29 / 32
+ Requests Cancelled   : 3 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1926
+ Aggregate Throughput : 837.48 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 32.58 | p50: 34.15 | p95: 41.61 | p99: 42.70 | Max: 43.08
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 7.83 | p50: 6.63 | p95: 13.64 | p99: 14.63 | Max: 34.76
+
+### 3. Request Duration (in ms)
+  Mean: 541.23 | p50: 469.81 | p95: 885.39 | p99: 886.36
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m8 clients[0m | Requests: [1m32 total[0m | Slots: [1m8[0m | Cancel Rate: [1m10%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)              837.48 tok/s       906.38 tok/s   [32m +  8.23%  [FASTER]    [0m
+ Total Wall Time (s)                        2.30 s             2.12 s   [32m   -7.60%  [IMPROVED]  [0m
+ Total Tokens Emitted                         1926               1926
+ Requests (Succ / Canc / Fail)              29/3/0             29/3/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                                32.58 ms           35.71 ms   [31m +  9.61%  [REGRESSION][0m
+    - p50 (Median)                        34.15 ms           37.97 ms   [31m + 11.18%  [REGRESSION][0m
+    - p95 (Tail)                          41.61 ms           42.69 ms   [31m +  2.59%  [REGRESSION][0m
+    - p99 (Worst Tail)                    42.70 ms           43.12 ms   [31m +  0.96%  [REGRESSION][0m
+    - Max Spike                           43.08 ms           43.17 ms   [31m +  0.21%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 7.83 ms            7.40 ms   [32m   -5.48%  [IMPROVED]  [0m
+    - p50 (Median)                         6.63 ms            6.93 ms   [31m +  4.48%  [REGRESSION][0m
+    - p95 (Tail Jitter)                   13.64 ms           10.00 ms   [32m  -26.63%  [IMPROVED]  [0m
+    - p99 (Worst Tail)                    14.63 ms           10.70 ms   [32m  -26.88%  [IMPROVED]  [0m
+    - Max Spike                           34.76 ms           37.42 ms   [31m +  7.68%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                               541.23 ms          516.49 ms   [32m   -4.57%  [IMPROVED]  [0m
+    - p50 (Median)                       469.81 ms          486.26 ms   [31m +  3.50%  [REGRESSION][0m
+    - p95 (Tail)                         885.39 ms          662.71 ms   [32m  -25.15%  [IMPROVED]  [0m
+    - p99 (Worst Tail)                   886.36 ms          663.64 ms   [32m  -25.13%  [IMPROVED]  [0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [7/15] Case 7: 16 Clients (20% Cancel)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (16 Clients | 32 Requests | 64 MaxTok | 20% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3532245 (logs at /tmp/llama_server_krish.goradia_3532239.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 16 clients
+ Total Requests : 32
+ Max Tokens     : 64
+ Cancel Rate    : 20.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.84 s
+ Requests Succeeded   : 26 / 32
+ Requests Cancelled   : 6 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1740
+ Aggregate Throughput : 943.64 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 304.15 | p50: 465.96 | p95: 535.20 | p99: 544.11 | Max: 544.51
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 7.03 | p50: 7.00 | p95: 8.50 | p99: 18.92 | Max: 32.60
+
+### 3. Request Duration (in ms)
+  Mean: 761.22 | p50: 872.90 | p95: 1001.44 | p99: 1002.00
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3532416 (logs at /tmp/llama_server_krish.goradia_3532410.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 16 clients
+ Total Requests : 32
+ Max Tokens     : 64
+ Cancel Rate    : 20.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.78 s
+ Requests Succeeded   : 26 / 32
+ Requests Cancelled   : 6 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1740
+ Aggregate Throughput : 978.86 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 291.43 | p50: 455.25 | p95: 503.83 | p99: 504.97 | Max: 505.12
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.71 | p50: 6.53 | p95: 9.52 | p99: 14.92 | Max: 34.67
+
+### 3. Request Duration (in ms)
+  Mean: 727.54 | p50: 843.10 | p95: 949.28 | p99: 963.25
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m16 clients[0m | Requests: [1m32 total[0m | Slots: [1m8[0m | Cancel Rate: [1m20%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)              978.86 tok/s       943.64 tok/s   [31m   -3.60%  [SLOWER]    [0m
+ Total Wall Time (s)                        1.78 s             1.84 s   [31m +  3.73%  [REGRESSION][0m
+ Total Tokens Emitted                         1740               1740
+ Requests (Succ / Canc / Fail)              26/6/0             26/6/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                               291.43 ms          304.15 ms   [31m +  4.36%  [REGRESSION][0m
+    - p50 (Median)                       455.25 ms          465.96 ms   [31m +  2.35%  [REGRESSION][0m
+    - p95 (Tail)                         503.83 ms          535.20 ms   [31m +  6.23%  [REGRESSION][0m
+    - p99 (Worst Tail)                   504.97 ms          544.11 ms   [31m +  7.75%  [REGRESSION][0m
+    - Max Spike                          505.12 ms          544.51 ms   [31m +  7.80%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 6.71 ms            7.03 ms   [31m +  4.81%  [REGRESSION][0m
+    - p50 (Median)                         6.53 ms            7.00 ms   [31m +  7.19%  [REGRESSION][0m
+    - p95 (Tail Jitter)                    9.52 ms            8.50 ms   [32m  -10.71%  [IMPROVED]  [0m
+    - p99 (Worst Tail)                    14.92 ms           18.92 ms   [31m + 26.78%  [REGRESSION][0m
+    - Max Spike                           34.67 ms           32.60 ms   [32m   -5.97%  [IMPROVED]  [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                               727.54 ms          761.22 ms   [31m +  4.63%  [REGRESSION][0m
+    - p50 (Median)                       843.10 ms          872.90 ms   [31m +  3.53%  [REGRESSION][0m
+    - p95 (Tail)                         949.28 ms         1001.44 ms   [31m +  5.49%  [REGRESSION][0m
+    - p99 (Worst Tail)                   963.25 ms         1002.00 ms   [31m +  4.02%  [REGRESSION][0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [8/15] Case 8: 32 Clients (20% Cancel)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (32 Clients | 64 Requests | 64 MaxTok | 20% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3532609 (logs at /tmp/llama_server_krish.goradia_3532603.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 32 clients
+ Total Requests : 64
+ Max Tokens     : 64
+ Cancel Rate    : 20.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.70 s
+ Requests Succeeded   : 30 / 64
+ Requests Cancelled   : 8 / 64
+ Requests Failed      : 26 / 64
+ Total Tokens Emitted : 1650
+ Aggregate Throughput : 968.70 tokens/sec
+---------------------------------------------------------------------
+
+[!] Sample Failure Error(s):
+  Request #59: Remote end closed connection without response
+  Request #63: <urlopen error [Errno 111] Connection refused>
+  Request #56: Remote end closed connection without response
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 691.99 | p50: 600.71 | p95: 1463.20 | p99: 1488.04 | Max: 1496.29
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 7.19 | p50: 7.01 | p95: 8.15 | p99: 19.11 | Max: 38.09
+
+### 3. Request Duration (in ms)
+  Mean: 1098.08 | p50: 1082.40 | p95: 1664.84 | p99: 1676.76
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3532807 (logs at /tmp/llama_server_krish.goradia_3532801.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 32 clients
+ Total Requests : 64
+ Max Tokens     : 64
+ Cancel Rate    : 20.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.43 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 996.01 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 880.24 | p50: 1030.00 | p95: 1406.94 | p99: 1421.20 | Max: 1433.51
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 7.02 | p50: 6.52 | p95: 11.12 | p99: 17.43 | Max: 34.34
+
+### 3. Request Duration (in ms)
+  Mean: 1336.75 | p50: 1470.98 | p95: 1875.08 | p99: 1910.56
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m32 clients[0m | Requests: [1m64 total[0m | Slots: [1m8[0m | Cancel Rate: [1m20%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)              996.01 tok/s       968.70 tok/s   [31m   -2.74%  [SLOWER]    [0m
+ Total Wall Time (s)                        3.43 s             1.70 s   [32m  -50.36%  [IMPROVED]  [0m
+ Total Tokens Emitted                         3418               1650
+ Requests (Succ / Canc / Fail)             51/13/0            30/8/26
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                               880.24 ms          691.99 ms   [32m  -21.39%  [IMPROVED]  [0m
+    - p50 (Median)                      1030.00 ms          600.71 ms   [32m  -41.68%  [IMPROVED]  [0m
+    - p95 (Tail)                        1406.94 ms         1463.20 ms   [31m +  4.00%  [REGRESSION][0m
+    - p99 (Worst Tail)                  1421.20 ms         1488.04 ms   [31m +  4.70%  [REGRESSION][0m
+    - Max Spike                         1433.51 ms         1496.29 ms   [31m +  4.38%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 7.02 ms            7.19 ms   [31m +  2.40%  [REGRESSION][0m
+    - p50 (Median)                         6.52 ms            7.01 ms   [31m +  7.59%  [REGRESSION][0m
+    - p95 (Tail Jitter)                   11.12 ms            8.15 ms   [32m  -26.69%  [IMPROVED]  [0m
+    - p99 (Worst Tail)                    17.43 ms           19.11 ms   [31m +  9.62%  [REGRESSION][0m
+    - Max Spike                           34.34 ms           38.09 ms   [31m + 10.93%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                              1336.75 ms         1098.08 ms   [32m  -17.85%  [IMPROVED]  [0m
+    - p50 (Median)                      1470.98 ms         1082.40 ms   [32m  -26.42%  [IMPROVED]  [0m
+    - p95 (Tail)                        1875.08 ms         1664.84 ms   [32m  -11.21%  [IMPROVED]  [0m
+    - p99 (Worst Tail)                  1910.56 ms         1676.76 ms   [32m  -12.24%  [IMPROVED]  [0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [9/15] Case 9: 64 Clients (20% Cancel)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (64 Clients | 64 Requests | 64 MaxTok | 20% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3533008 (logs at /tmp/llama_server_krish.goradia_3533002.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 64 clients
+ Total Requests : 64
+ Max Tokens     : 64
+ Cancel Rate    : 20.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.64 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 938.59 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 1393.27 | p50: 1504.70 | p95: 2818.83 | p99: 2987.09 | Max: 3009.97
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 7.40 | p50: 6.93 | p95: 10.92 | p99: 19.01 | Max: 37.37
+
+### 3. Request Duration (in ms)
+  Mean: 1874.56 | p50: 1964.98 | p95: 3391.33 | p99: 3580.36
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3533236 (logs at /tmp/llama_server_krish.goradia_3533230.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 64 clients
+ Total Requests : 64
+ Max Tokens     : 64
+ Cancel Rate    : 20.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.67 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 930.77 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 1362.36 | p50: 1476.48 | p95: 2740.00 | p99: 2912.01 | Max: 2930.04
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 7.31 | p50: 6.70 | p95: 12.41 | p99: 19.23 | Max: 33.60
+
+### 3. Request Duration (in ms)
+  Mean: 1837.52 | p50: 1926.67 | p95: 3334.71 | p99: 3614.93
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m64 clients[0m | Requests: [1m64 total[0m | Slots: [1m8[0m | Cancel Rate: [1m20%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)              930.77 tok/s       938.59 tok/s   [32m +  0.84%  [FASTER]    [0m
+ Total Wall Time (s)                        3.67 s             3.64 s   [32m   -0.83%  [IMPROVED]  [0m
+ Total Tokens Emitted                         3418               3418
+ Requests (Succ / Canc / Fail)             51/13/0            51/13/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                              1362.36 ms         1393.27 ms   [31m +  2.27%  [REGRESSION][0m
+    - p50 (Median)                      1476.48 ms         1504.70 ms   [31m +  1.91%  [REGRESSION][0m
+    - p95 (Tail)                        2740.00 ms         2818.83 ms   [31m +  2.88%  [REGRESSION][0m
+    - p99 (Worst Tail)                  2912.01 ms         2987.09 ms   [31m +  2.58%  [REGRESSION][0m
+    - Max Spike                         2930.04 ms         3009.97 ms   [31m +  2.73%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 7.31 ms            7.40 ms   [31m +  1.29%  [REGRESSION][0m
+    - p50 (Median)                         6.70 ms            6.93 ms   [31m +  3.51%  [REGRESSION][0m
+    - p95 (Tail Jitter)                   12.41 ms           10.92 ms   [32m  -12.00%  [IMPROVED]  [0m
+    - p99 (Worst Tail)                    19.23 ms           19.01 ms   [32m   -1.16%  [IMPROVED]  [0m
+    - Max Spike                           33.60 ms           37.37 ms   [31m + 11.22%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                              1837.52 ms         1874.56 ms   [31m +  2.02%  [REGRESSION][0m
+    - p50 (Median)                      1926.67 ms         1964.98 ms   [31m +  1.99%  [REGRESSION][0m
+    - p95 (Tail)                        3334.71 ms         3391.33 ms   [31m +  1.70%  [REGRESSION][0m
+    - p99 (Worst Tail)                  3614.93 ms         3580.36 ms   [32m   -0.96%  [IMPROVED]  [0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [10/15] Case 10: 16 Clients (40% Cancel Chaos)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (16 Clients | 32 Requests | 64 MaxTok | 40% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3533469 (logs at /tmp/llama_server_krish.goradia_3533463.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 16 clients
+ Total Requests : 32
+ Max Tokens     : 64
+ Cancel Rate    : 40.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.66 s
+ Requests Succeeded   : 19 / 32
+ Requests Cancelled   : 13 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1306
+ Aggregate Throughput : 788.72 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 244.13 | p50: 149.38 | p95: 483.83 | p99: 512.85 | Max: 520.11
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 7.62 | p50: 7.05 | p95: 13.02 | p99: 20.69 | Max: 29.32
+
+### 3. Request Duration (in ms)
+  Mean: 739.46 | p50: 637.54 | p95: 1086.37 | p99: 1091.22
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3533648 (logs at /tmp/llama_server_krish.goradia_3533642.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 16 clients
+ Total Requests : 32
+ Max Tokens     : 64
+ Cancel Rate    : 40.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.59 s
+ Requests Succeeded   : 19 / 32
+ Requests Cancelled   : 13 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1306
+ Aggregate Throughput : 821.73 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 217.27 | p50: 103.61 | p95: 485.05 | p99: 488.20 | Max: 488.98
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 7.24 | p50: 6.58 | p95: 11.05 | p99: 21.82 | Max: 29.86
+
+### 3. Request Duration (in ms)
+  Mean: 687.68 | p50: 566.91 | p95: 1028.28 | p99: 1031.64
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m16 clients[0m | Requests: [1m32 total[0m | Slots: [1m8[0m | Cancel Rate: [1m40%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)              821.73 tok/s       788.72 tok/s   [31m   -4.02%  [SLOWER]    [0m
+ Total Wall Time (s)                        1.59 s             1.66 s   [31m +  4.18%  [REGRESSION][0m
+ Total Tokens Emitted                         1306               1306
+ Requests (Succ / Canc / Fail)             19/13/0            19/13/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                               217.27 ms          244.13 ms   [31m + 12.36%  [REGRESSION][0m
+    - p50 (Median)                       103.61 ms          149.38 ms   [31m + 44.17%  [REGRESSION][0m
+    - p95 (Tail)                         485.05 ms          483.83 ms   [32m   -0.25%  [IMPROVED]  [0m
+    - p99 (Worst Tail)                   488.20 ms          512.85 ms   [31m +  5.05%  [REGRESSION][0m
+    - Max Spike                          488.98 ms          520.11 ms   [31m +  6.36%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 7.24 ms            7.62 ms   [31m +  5.30%  [REGRESSION][0m
+    - p50 (Median)                         6.58 ms            7.05 ms   [31m +  7.08%  [REGRESSION][0m
+    - p95 (Tail Jitter)                   11.05 ms           13.02 ms   [31m + 17.76%  [REGRESSION][0m
+    - p99 (Worst Tail)                    21.82 ms           20.69 ms   [32m   -5.19%  [IMPROVED]  [0m
+    - Max Spike                           29.86 ms           29.32 ms   [32m   -1.80%  [IMPROVED]  [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                               687.68 ms          739.46 ms   [31m +  7.53%  [REGRESSION][0m
+    - p50 (Median)                       566.91 ms          637.54 ms   [31m + 12.46%  [REGRESSION][0m
+    - p95 (Tail)                        1028.28 ms         1086.37 ms   [31m +  5.65%  [REGRESSION][0m
+    - p99 (Worst Tail)                  1031.64 ms         1091.22 ms   [31m +  5.77%  [REGRESSION][0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [11/15] Case 11: 32 Clients (40% Cancel Chaos)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (32 Clients | 64 Requests | 64 MaxTok | 40% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3533833 (logs at /tmp/llama_server_krish.goradia_3533827.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 32 clients
+ Total Requests : 64
+ Max Tokens     : 64
+ Cancel Rate    : 40.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.06 s
+ Requests Succeeded   : 38 / 64
+ Requests Cancelled   : 26 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2612
+ Aggregate Throughput : 853.56 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 659.76 | p50: 710.32 | p95: 1078.77 | p99: 1095.25 | Max: 1098.38
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 8.22 | p50: 6.96 | p95: 13.79 | p99: 22.78 | Max: 33.54
+
+### 3. Request Duration (in ms)
+  Mean: 1194.23 | p50: 1230.70 | p95: 1897.67 | p99: 1920.17
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3534020 (logs at /tmp/llama_server_krish.goradia_3534014.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 32 clients
+ Total Requests : 64
+ Max Tokens     : 64
+ Cancel Rate    : 40.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.76 s
+ Requests Succeeded   : 38 / 64
+ Requests Cancelled   : 26 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2612
+ Aggregate Throughput : 944.78 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 676.96 | p50: 735.35 | p95: 1015.22 | p99: 1025.13 | Max: 1026.26
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 7.53 | p50: 6.63 | p95: 12.61 | p99: 19.61 | Max: 33.25
+
+### 3. Request Duration (in ms)
+  Mean: 1166.57 | p50: 1212.84 | p95: 1621.29 | p99: 1632.42
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m32 clients[0m | Requests: [1m64 total[0m | Slots: [1m8[0m | Cancel Rate: [1m40%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)              944.78 tok/s       853.56 tok/s   [31m   -9.65%  [SLOWER]    [0m
+ Total Wall Time (s)                        2.76 s             3.06 s   [31m + 10.69%  [REGRESSION][0m
+ Total Tokens Emitted                         2612               2612
+ Requests (Succ / Canc / Fail)             38/26/0            38/26/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                               676.96 ms          659.76 ms   [32m   -2.54%  [IMPROVED]  [0m
+    - p50 (Median)                       735.35 ms          710.32 ms   [32m   -3.40%  [IMPROVED]  [0m
+    - p95 (Tail)                        1015.22 ms         1078.77 ms   [31m +  6.26%  [REGRESSION][0m
+    - p99 (Worst Tail)                  1025.13 ms         1095.25 ms   [31m +  6.84%  [REGRESSION][0m
+    - Max Spike                         1026.26 ms         1098.38 ms   [31m +  7.03%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 7.53 ms            8.22 ms   [31m +  9.17%  [REGRESSION][0m
+    - p50 (Median)                         6.63 ms            6.96 ms   [31m +  4.98%  [REGRESSION][0m
+    - p95 (Tail Jitter)                   12.61 ms           13.79 ms   [31m +  9.31%  [REGRESSION][0m
+    - p99 (Worst Tail)                    19.61 ms           22.78 ms   [31m + 16.13%  [REGRESSION][0m
+    - Max Spike                           33.25 ms           33.54 ms   [31m +  0.87%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                              1166.57 ms         1194.23 ms   [31m +  2.37%  [REGRESSION][0m
+    - p50 (Median)                      1212.84 ms         1230.70 ms   [31m +  1.47%  [REGRESSION][0m
+    - p95 (Tail)                        1621.29 ms         1897.67 ms   [31m + 17.05%  [REGRESSION][0m
+    - p99 (Worst Tail)                  1632.42 ms         1920.17 ms   [31m + 17.63%  [REGRESSION][0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [12/15] Case 12: 64 Clients (50% Abort Storm)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (64 Clients | 64 Requests | 64 MaxTok | 50% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3534229 (logs at /tmp/llama_server_krish.goradia_3534223.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 64 clients
+ Total Requests : 64
+ Max Tokens     : 64
+ Cancel Rate    : 50.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.59 s
+ Requests Succeeded   : 32 / 64
+ Requests Cancelled   : 32 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2240
+ Aggregate Throughput : 865.86 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 921.11 | p50: 911.96 | p95: 1853.66 | p99: 1937.64 | Max: 1965.60
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 8.12 | p50: 7.11 | p95: 14.89 | p99: 21.73 | Max: 33.13
+
+### 3. Request Duration (in ms)
+  Mean: 1449.24 | p50: 1441.00 | p95: 2473.90 | p99: 2522.95
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3534448 (logs at /tmp/llama_server_krish.goradia_3534442.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 64 clients
+ Total Requests : 64
+ Max Tokens     : 64
+ Cancel Rate    : 50.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.23 s
+ Requests Succeeded   : 32 / 64
+ Requests Cancelled   : 32 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2240
+ Aggregate Throughput : 1002.86 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 865.45 | p50: 865.71 | p95: 1707.42 | p99: 1753.75 | Max: 1765.22
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 7.26 | p50: 6.70 | p95: 14.30 | p99: 18.80 | Max: 32.18
+
+### 3. Request Duration (in ms)
+  Mean: 1337.67 | p50: 1355.03 | p95: 2148.54 | p99: 2178.49
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m64 clients[0m | Requests: [1m64 total[0m | Slots: [1m8[0m | Cancel Rate: [1m50%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)             1002.86 tok/s       865.86 tok/s   [31m  -13.66%  [SLOWER]    [0m
+ Total Wall Time (s)                        2.23 s             2.59 s   [31m + 15.82%  [REGRESSION][0m
+ Total Tokens Emitted                         2240               2240
+ Requests (Succ / Canc / Fail)             32/32/0            32/32/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                               865.45 ms          921.11 ms   [31m +  6.43%  [REGRESSION][0m
+    - p50 (Median)                       865.71 ms          911.96 ms   [31m +  5.34%  [REGRESSION][0m
+    - p95 (Tail)                        1707.42 ms         1853.66 ms   [31m +  8.57%  [REGRESSION][0m
+    - p99 (Worst Tail)                  1753.75 ms         1937.64 ms   [31m + 10.49%  [REGRESSION][0m
+    - Max Spike                         1765.22 ms         1965.60 ms   [31m + 11.35%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 7.26 ms            8.12 ms   [31m + 11.84%  [REGRESSION][0m
+    - p50 (Median)                         6.70 ms            7.11 ms   [31m +  6.11%  [REGRESSION][0m
+    - p95 (Tail Jitter)                   14.30 ms           14.89 ms   [31m +  4.16%  [REGRESSION][0m
+    - p99 (Worst Tail)                    18.80 ms           21.73 ms   [31m + 15.59%  [REGRESSION][0m
+    - Max Spike                           32.18 ms           33.13 ms   [31m +  2.95%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                              1337.67 ms         1449.24 ms   [31m +  8.34%  [REGRESSION][0m
+    - p50 (Median)                      1355.03 ms         1441.00 ms   [31m +  6.34%  [REGRESSION][0m
+    - p95 (Tail)                        2148.54 ms         2473.90 ms   [31m + 15.14%  [REGRESSION][0m
+    - p99 (Worst Tail)                  2178.49 ms         2522.95 ms   [31m + 15.81%  [REGRESSION][0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [13/15] Case 13: 16 Clients (Short Burst, Max 32 Tokens)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (16 Clients | 48 Requests | 32 MaxTok | 0% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3534682 (logs at /tmp/llama_server_krish.goradia_3534675.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 16 clients
+ Total Requests : 48
+ Max Tokens     : 32
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.49 s
+ Requests Succeeded   : 48 / 48
+ Requests Cancelled   : 0 / 48
+ Requests Failed      : 0 / 48
+ Total Tokens Emitted : 1632
+ Aggregate Throughput : 1092.92 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 230.58 | p50: 269.72 | p95: 282.57 | p99: 284.30 | Max: 284.85
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.77 | p50: 7.03 | p95: 8.05 | p99: 10.23 | Max: 27.76
+
+### 3. Request Duration (in ms)
+  Mean: 454.03 | p50: 490.68 | p95: 502.69 | p99: 505.41
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3534861 (logs at /tmp/llama_server_krish.goradia_3534855.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 16 clients
+ Total Requests : 48
+ Max Tokens     : 32
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.44 s
+ Requests Succeeded   : 48 / 48
+ Requests Cancelled   : 0 / 48
+ Requests Failed      : 0 / 48
+ Total Tokens Emitted : 1632
+ Aggregate Throughput : 1136.16 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 222.99 | p50: 260.47 | p95: 272.63 | p99: 273.96 | Max: 274.37
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.50 | p50: 6.65 | p95: 7.66 | p99: 12.80 | Max: 26.73
+
+### 3. Request Duration (in ms)
+  Mean: 437.46 | p50: 473.48 | p95: 486.93 | p99: 487.79
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m16 clients[0m | Requests: [1m48 total[0m | Slots: [1m8[0m | Cancel Rate: [1m0%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)             1136.16 tok/s      1092.92 tok/s   [31m   -3.81%  [SLOWER]    [0m
+ Total Wall Time (s)                        1.44 s             1.49 s   [31m +  3.96%  [REGRESSION][0m
+ Total Tokens Emitted                         1632               1632
+ Requests (Succ / Canc / Fail)              48/0/0             48/0/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                               222.99 ms          230.58 ms   [31m +  3.40%  [REGRESSION][0m
+    - p50 (Median)                       260.47 ms          269.72 ms   [31m +  3.55%  [REGRESSION][0m
+    - p95 (Tail)                         272.63 ms          282.57 ms   [31m +  3.64%  [REGRESSION][0m
+    - p99 (Worst Tail)                   273.96 ms          284.30 ms   [31m +  3.78%  [REGRESSION][0m
+    - Max Spike                          274.37 ms          284.85 ms   [31m +  3.82%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 6.50 ms            6.77 ms   [31m +  4.18%  [REGRESSION][0m
+    - p50 (Median)                         6.65 ms            7.03 ms   [31m +  5.86%  [REGRESSION][0m
+    - p95 (Tail Jitter)                    7.66 ms            8.05 ms   [31m +  5.11%  [REGRESSION][0m
+    - p99 (Worst Tail)                    12.80 ms           10.23 ms   [32m  -20.07%  [IMPROVED]  [0m
+    - Max Spike                           26.73 ms           27.76 ms   [31m +  3.84%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                               437.46 ms          454.03 ms   [31m +  3.79%  [REGRESSION][0m
+    - p50 (Median)                       473.48 ms          490.68 ms   [31m +  3.63%  [REGRESSION][0m
+    - p95 (Tail)                         486.93 ms          502.69 ms   [31m +  3.24%  [REGRESSION][0m
+    - p99 (Worst Tail)                   487.79 ms          505.41 ms   [31m +  3.61%  [REGRESSION][0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [14/15] Case 14: 16 Clients (Deep Stream, Max 128 Tokens)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (16 Clients | 32 Requests | 128 MaxTok | 0% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3535046 (logs at /tmp/llama_server_krish.goradia_3535040.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 16 clients
+ Total Requests : 32
+ Max Tokens     : 128
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.70 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 4160
+ Aggregate Throughput : 1123.00 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 733.75 | p50: 969.84 | p95: 976.45 | p99: 978.92 | Max: 979.62
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.87 | p50: 6.92 | p95: 7.12 | p99: 8.97 | Max: 45.74
+
+### 3. Request Duration (in ms)
+  Mean: 1619.39 | p50: 1845.57 | p95: 1855.27 | p99: 1856.75
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3535217 (logs at /tmp/llama_server_krish.goradia_3535211.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 16 clients
+ Total Requests : 32
+ Max Tokens     : 128
+ Cancel Rate    : 0.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.48 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 4160
+ Aggregate Throughput : 1195.96 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 683.47 | p50: 893.80 | p95: 914.08 | p99: 915.09 | Max: 915.35
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.45 | p50: 6.47 | p95: 6.90 | p99: 8.33 | Max: 43.20
+
+### 3. Request Duration (in ms)
+  Mean: 1515.70 | p50: 1721.81 | p95: 1744.80 | p99: 1751.24
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m16 clients[0m | Requests: [1m32 total[0m | Slots: [1m8[0m | Cancel Rate: [1m0%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)             1195.96 tok/s      1123.00 tok/s   [31m   -6.10%  [SLOWER]    [0m
+ Total Wall Time (s)                        3.48 s             3.70 s   [31m +  6.50%  [REGRESSION][0m
+ Total Tokens Emitted                         4160               4160
+ Requests (Succ / Canc / Fail)              32/0/0             32/0/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                               683.47 ms          733.75 ms   [31m +  7.36%  [REGRESSION][0m
+    - p50 (Median)                       893.80 ms          969.84 ms   [31m +  8.51%  [REGRESSION][0m
+    - p95 (Tail)                         914.08 ms          976.45 ms   [31m +  6.82%  [REGRESSION][0m
+    - p99 (Worst Tail)                   915.09 ms          978.92 ms   [31m +  6.98%  [REGRESSION][0m
+    - Max Spike                          915.35 ms          979.62 ms   [31m +  7.02%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 6.45 ms            6.87 ms   [31m +  6.42%  [REGRESSION][0m
+    - p50 (Median)                         6.47 ms            6.92 ms   [31m +  6.89%  [REGRESSION][0m
+    - p95 (Tail Jitter)                    6.90 ms            7.12 ms   [31m +  3.22%  [REGRESSION][0m
+    - p99 (Worst Tail)                     8.33 ms            8.97 ms   [31m +  7.65%  [REGRESSION][0m
+    - Max Spike                           43.20 ms           45.74 ms   [31m +  5.88%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                              1515.70 ms         1619.39 ms   [31m +  6.84%  [REGRESSION][0m
+    - p50 (Median)                      1721.81 ms         1845.57 ms   [31m +  7.19%  [REGRESSION][0m
+    - p95 (Tail)                        1744.80 ms         1855.27 ms   [31m +  6.33%  [REGRESSION][0m
+    - p99 (Worst Tail)                  1751.24 ms         1856.75 ms   [31m +  6.03%  [REGRESSION][0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+>>> [15/15] Case 15: 32 Clients (Full Stress: Deep Stream 128 Tok + 20% Cancel)...
+[1m================================================================================[0m
+[1m          llama.cpp Automated A/B Performance Comparison Benchmark             [0m
+[1m================================================================================[0m
+  Current (Modernized) : [36m/home/krish.goradia/llama.cpp[0m
+  Legacy (Master Base) : [36m/home/krish.goradia/llama.cpp/llama.cpp-master[0m
+  Model                : [33m/home/krish.goradia/llama.cpp/my_models/3b.gguf[0m
+  Parallel Slots       : [33m8[0m
+  Context Size (Total) : [33m16384[0m
+[1m================================================================================[0m
+
+
+[1m[36m################################################################################[0m
+[1m[36m RUNNING CASE: Custom A/B Case (32 Clients | 64 Requests | 128 MaxTok | 20% Cancel Rate)[0m
+[1m[36m################################################################################[0m
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3535412 (logs at /tmp/llama_server_krish.goradia_3535406.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 32 clients
+ Total Requests : 64
+ Max Tokens     : 128
+ Cancel Rate    : 20.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 7.35 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 6682
+ Aggregate Throughput : 908.55 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 1712.77 | p50: 2021.15 | p95: 2887.33 | p99: 3865.55 | Max: 4830.45
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 7.49 | p50: 6.96 | p95: 12.45 | p99: 19.92 | Max: 44.20
+
+### 3. Request Duration (in ms)
+  Mean: 2679.31 | p50: 2958.11 | p95: 4365.39 | p99: 5089.62
+=====================================================================
+
+==================================================================
+[2/3] Starting llama-server on port 37449 (8 slots)...
+==================================================================
+Server started with PID: 3535599 (logs at /tmp/llama_server_krish.goradia_3535593.log)
+Waiting for server to initialize...
+Server is READY.
+
+==================================================================
+           llama.cpp Server Concurrency & Latency Benchmark        
+==================================================================
+ Target URL     : http://127.0.0.1:37449
+ Concurrency    : 32 clients
+ Total Requests : 64
+ Max Tokens     : 128
+ Cancel Rate    : 20.0%
+------------------------------------------------------------------
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 6.56 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 6682
+ Aggregate Throughput : 1018.14 tokens/sec
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 1631.84 | p50: 1884.14 | p95: 2674.60 | p99: 2688.25 | Max: 2696.42
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 6.86 | p50: 6.47 | p95: 9.05 | p99: 17.06 | Max: 43.04
+
+### 3. Request Duration (in ms)
+  Mean: 2516.82 | p50: 2758.04 | p95: 3669.86 | p99: 3775.37
+=====================================================================
+
+[1m========================================================================================================[0m
+[1m                       A/B BENCHMARK COMPARISON REPORT: Custom A/B Case[0m
+[1m========================================================================================================[0m
+ Concurrency: [1m32 clients[0m | Requests: [1m64 total[0m | Slots: [1m8[0m | Cancel Rate: [1m20%[0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ [1mMETRIC                            LEGACY (MASTER) CURRENT (LOCKFREE)   DELTA (%)  STATUS      [0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+ Throughput (tokens/sec)             1018.14 tok/s       908.55 tok/s   [31m  -10.76%  [SLOWER]    [0m
+ Total Wall Time (s)                        6.56 s             7.35 s   [31m + 12.06%  [REGRESSION][0m
+ Total Tokens Emitted                         6682               6682
+ Requests (Succ / Canc / Fail)             51/13/0            51/13/0
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m TIME TO FIRST TOKEN (TTFT in ms)[0m
+    - Mean                              1631.84 ms         1712.77 ms   [31m +  4.96%  [REGRESSION][0m
+    - p50 (Median)                      1884.14 ms         2021.15 ms   [31m +  7.27%  [REGRESSION][0m
+    - p95 (Tail)                        2674.60 ms         2887.33 ms   [31m +  7.95%  [REGRESSION][0m
+    - p99 (Worst Tail)                  2688.25 ms         3865.55 ms   [31m + 43.79%  [REGRESSION][0m
+    - Max Spike                         2696.42 ms         4830.45 ms   [31m + 79.14%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m INTER-TOKEN LATENCY (ITL in ms)[0m
+    - Mean                                 6.86 ms            7.49 ms   [31m +  9.22%  [REGRESSION][0m
+    - p50 (Median)                         6.47 ms            6.96 ms   [31m +  7.65%  [REGRESSION][0m
+    - p95 (Tail Jitter)                    9.05 ms           12.45 ms   [31m + 37.55%  [REGRESSION][0m
+    - p99 (Worst Tail)                    17.06 ms           19.92 ms   [31m + 16.77%  [REGRESSION][0m
+    - Max Spike                           43.04 ms           44.20 ms   [31m +  2.71%  [REGRESSION][0m
+[1m--------------------------------------------------------------------------------------------------------[0m
+[1m REQUEST DURATION (Total Time in ms)[0m
+    - Mean                              2516.82 ms         2679.31 ms   [31m +  6.46%  [REGRESSION][0m
+    - p50 (Median)                      2758.04 ms         2958.11 ms   [31m +  7.25%  [REGRESSION][0m
+    - p95 (Tail)                        3669.86 ms         4365.39 ms   [31m + 18.95%  [REGRESSION][0m
+    - p99 (Worst Tail)                  3775.37 ms         5089.62 ms   [31m + 34.81%  [REGRESSION][0m
+[1m========================================================================================================[0m
+
+[1m[32m================================================================================[0m
+[1m[32m              All A/B Benchmarks Finished Successfully!                        [0m
+[1m[32m================================================================================[0m
+================================================================================
+ All 15 Benchmark Cases Finished Successfully!
+================================================================================

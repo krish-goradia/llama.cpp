@@ -31,19 +31,23 @@ int server_queue::post(server_task && task, bool front) {
     }
     const int  task_id     = task.id;
     const bool reset_timer = task_resets_idle_timer(task.type);
-    // if this is cancel task make sure to clean up pending tasks
-    if (task.type == SERVER_TASK_TYPE_CANCEL) {
-        cleanup_pending_task(task.id_target);
-    }
     QUE_DBG("new task, id = %d\n", task_id);
     if (front) {
         std::unique_lock<std::mutex> lock(mutex_tasks);
-        queue_tasks_unhandled.push_front(std::move(task));
+        queue_tasks_unhandled.push(std::move(task));
         if (reset_timer) {
             time_last_task = ggml_time_ms();
         }
         condition_tasks.notify_one();
     } else {
+#if defined(LLAMA_SERVER_DISABLE_MPSC)
+        std::unique_lock<std::mutex> lock(mutex_tasks);
+        queue_tasks.push(std::move(task));
+        if (reset_timer) {
+            time_last_task = ggml_time_ms();
+        }
+        condition_tasks.notify_one();
+#else
         queue_tasks.push(std::move(task));
         {
             std::unique_lock<std::mutex> lock(mutex_tasks);
@@ -52,6 +56,7 @@ int server_queue::post(server_task && task, bool front) {
             }
             condition_tasks.notify_one();
         }
+#endif
     }
     return task_id;
 }
@@ -62,15 +67,11 @@ int server_queue::post(std::vector<server_task> && tasks, bool front) {
         if (task.id == -1) {
             task.id = id.fetch_add(1);
         }
-        // if this is cancel task make sure to clean up pending tasks
-        if (task.type == SERVER_TASK_TYPE_CANCEL) {
-            cleanup_pending_task(task.id_target);
-        }
         reset_timer |= task_resets_idle_timer(task.type);
         QUE_DBG("new task, id = %d/%d\n", task.id, (int) tasks.size());
         if (front) {
             std::unique_lock<std::mutex> lock(mutex_tasks);
-            queue_tasks_unhandled.push_front(std::move(task));
+            queue_tasks_unhandled.push(std::move(task));
         } else {
             queue_tasks.push(std::move(task));
         }
@@ -109,40 +110,7 @@ int server_queue::get_new_id() {
     return id.fetch_add(1);
 }
 
-void server_queue::pop_deferred_task(int id_slot) {
-    // 1. check for task pinned to this specific slot
-    auto it = queue_tasks_pinned.find(id_slot);
-    if (it != queue_tasks_pinned.end()) {
-        auto & q = it->second;
-        while (!q.empty()) {
-            server_task task = std::move(q.front());
-            q.pop();
-            if (task.is_cancelled()) {
-                QUE_DBG("pinned task %d was cancelled, skipping\n", task.id);
-                continue;
-            }
-            QUE_DBG("pop deferred pinned task (use slot %d), id_task = %d\n", id_slot, task.id);
-            queue_tasks_unhandled.push_front(std::move(task));
-            time_last_task = ggml_time_ms();
-            return;
-        }
-    }
 
-    // 2. if no pinned task, pop oldest unpinned task
-    while (!queue_tasks_deferred.empty()) {
-        server_task task = std::move(queue_tasks_deferred.front());
-        queue_tasks_deferred.pop();
-        if (task.is_cancelled()) {
-            QUE_DBG("deferred task %d was cancelled, skipping\n", task.id);
-            continue;
-        }
-        QUE_DBG("pop deferred unpinned task, id_task = %d\n", task.id);
-        queue_tasks_unhandled.push_front(std::move(task));
-        time_last_task = ggml_time_ms();
-        return;
-    }
-    time_last_task = ggml_time_ms();
-}
 
 void server_queue::wait_until_no_sleep() {
     std::unique_lock<std::mutex> lock(mutex_tasks);
@@ -168,10 +136,56 @@ void server_queue::terminate() {
 }
 
 bool server_queue::process_new_tasks(bool is_yielding) {
-    // 1. Process unhandled tasks from previous yield (thread-local)
+    SERVER_NVTX_RANGE("process_new_tasks");
+
+    // 1. Tier 1: Process deferred tasks if not yielding (highest priority for available slots)
+    if (!is_yielding) {
+        if (!queue_tasks_pinned.empty()) {
+            for (auto it = queue_tasks_pinned.begin(); it != queue_tasks_pinned.end(); ) {
+                auto & q = it->second;
+                size_t n_pinned = q.size();
+                for (size_t i = 0; i < n_pinned && !q.empty(); ++i) {
+                    server_task task = std::move(q.front());
+                    q.pop();
+                    if (task.is_cancelled()) {
+                        continue;
+                    }
+                    callback_new_task(std::move(task), is_yielding);
+                }
+                if (q.empty()) {
+                    it = queue_tasks_pinned.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+        }
+
+        if (!queue_tasks_deferred.empty()) {
+            size_t n_deferred = queue_tasks_deferred.size();
+            for (size_t i = 0; i < n_deferred; ++i) {
+                {
+                    std::unique_lock<std::mutex> lock(mutex_tasks);
+                    if (!running) {
+                        QUE_DBG("%s", "terminate\n");
+                        return true;
+                    }
+                }
+                server_task task = std::move(queue_tasks_deferred.front());
+                queue_tasks_deferred.pop();
+
+                if (task.is_cancelled()) {
+                    continue;
+                }
+
+                callback_new_task(std::move(task), is_yielding);
+            }
+        }
+    }
+
+    // 2. Tier 2: Process unhandled tasks from previous yield (thread-local)
     if (!queue_tasks_unhandled.empty()) {
-        std::deque<server_task> remaining;
-        while (!queue_tasks_unhandled.empty()) {
+        size_t n_unhandled = queue_tasks_unhandled.size();
+        for (size_t i = 0; i < n_unhandled; ++i) {
             {
                 std::unique_lock<std::mutex> lock(mutex_tasks);
                 if (!running) {
@@ -180,7 +194,7 @@ bool server_queue::process_new_tasks(bool is_yielding) {
                 }
             }
             server_task task = std::move(queue_tasks_unhandled.front());
-            queue_tasks_unhandled.pop_front();
+            queue_tasks_unhandled.pop();
 
             if (task.is_cancelled()) {
                 QUE_DBG("task %d was cancelled, discarding in O(1)\n", task.id);
@@ -191,13 +205,12 @@ bool server_queue::process_new_tasks(bool is_yielding) {
             if (!callback_new_task(std::move(task), is_yielding)) {
                 GGML_ASSERT(is_yielding && "a task can only be declined while yielding");
                 QUE_DBG("unhandled task declined again, id = %d\n", task.id);
-                remaining.push_back(std::move(task));
+                queue_tasks_unhandled.push(std::move(task));
             }
         }
-        queue_tasks_unhandled = std::move(remaining);
     }
 
-    // 2. Drain lock-free MPSC queue
+    // 3. Tier 3: Drain lock-free MPSC queue
     server_task task;
     while (queue_tasks.pop(task)) {
         {
@@ -218,7 +231,7 @@ bool server_queue::process_new_tasks(bool is_yielding) {
             // set it aside, do not put it back in the queue, else we offer it again in a loop
             GGML_ASSERT(is_yielding && "a task can only be declined while yielding");
             QUE_DBG("task declined, id = %d\n", task.id);
-            queue_tasks_unhandled.push_back(std::move(task));
+            queue_tasks_unhandled.push(std::move(task));
         }
     }
 
@@ -375,15 +388,15 @@ void server_queue::start_loop(int64_t idle_sleep_ms) {
             time_last_task = std::min(now, time_last_task + (now - t_update_slots));
         }
 
-        // if slots are still processing or new tasks arrived, immediately loop to next decode pass without sleeping
-        if (has_active_slots || !queue_tasks.empty() || !queue_tasks_unhandled.empty()) {
+        // if slots are still processing or work is pending, immediately loop to next decode pass without sleeping
+        if (has_active_slots || !queue_tasks.empty() || !queue_tasks_deferred.empty() || !queue_tasks_pinned.empty() || !queue_tasks_unhandled.empty()) {
             continue;
         }
 
         QUE_DBG("%s", "waiting for new tasks\n");
         while (true) {
             std::unique_lock<std::mutex> lock(mutex_tasks);
-            if (!running || !queue_tasks.empty() || !queue_tasks_unhandled.empty()) {
+            if (!running || !queue_tasks.empty() || !queue_tasks_deferred.empty() || !queue_tasks_pinned.empty() || !queue_tasks_unhandled.empty()) {
                 break; // go back to process new tasks or terminate
             }
 
@@ -416,7 +429,7 @@ void server_queue::start_loop(int64_t idle_sleep_ms) {
             } else {
                 // wait for new tasks or timeout for checking sleeping condition
                 bool res = condition_tasks.wait_for(lock, max_wait_time, [&]{
-                    return (!queue_tasks.empty() || !running);
+                    return (!queue_tasks.empty() || !queue_tasks_deferred.empty() || !queue_tasks_pinned.empty() || !queue_tasks_unhandled.empty() || !running);
                 });
                 if (res) {
                     break; // new task arrived or terminate
@@ -429,16 +442,7 @@ void server_queue::start_loop(int64_t idle_sleep_ms) {
     worker_stop();
 }
 
-void server_queue::cleanup_pending_task(int id_target) {
-    // no need lock because this is called exclusively by post()
-    auto rm_func = [id_target](const server_task & task) {
-        return task.id == id_target;
-    };
-    // a task declined while yielding is in queue_tasks_unhandled
-    queue_tasks_unhandled.erase(
-        std::remove_if(queue_tasks_unhandled.begin(), queue_tasks_unhandled.end(), rm_func),
-        queue_tasks_unhandled.end());
-}
+
 
 //
 // server_response

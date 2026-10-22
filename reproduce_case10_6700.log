@@ -1,0 +1,209 @@
+================================================================================
+ [Step 1] Inspecting Historical Log: /tmp/llama_server_krish.goradia_3603200.log
+================================================================================
+Found /tmp/llama_server_krish.goradia_3603200.log! Saving copy to ./failed_run_3603200.log...
+--- Last 50 Lines of Failed Run Server Log ---
+0.03.678.963 W slot   operator(): id  6 | task 32 | need to evaluate at least 1 token for each active slot (n_past = 46, task.n_tokens() = 46)
+0.03.678.963 W slot   operator(): id  6 | task 32 | n_past was set to 45
+0.03.678.982 W slot   operator(): id  7 | task 31 | need to evaluate at least 1 token for each active slot (n_past = 46, task.n_tokens() = 46)
+0.03.678.983 W slot   operator(): id  7 | task 31 | n_past was set to 45
+0.03.685.511 I slot print_timing: id  2 | task 26 | prompt eval time =      10.68 ms /     1 tokens (   10.68 ms per token,    93.68 tokens per second)
+0.03.685.514 I slot print_timing: id  2 | task 26 |        eval time =     497.69 ms /    64 tokens (    7.90 ms per token,   126.59 tokens per second)
+0.03.685.515 I slot print_timing: id  2 | task 26 |       total time =     508.36 ms /    65 tokens
+0.03.685.515 I slot print_timing: id  2 | task 26 |    graphs reused =        121
+0.03.685.525 I slot      release: id  2 | task 26 | stop processing: n_tokens = 109, truncated = 0
+0.03.685.733 I slot print_timing: id  3 | task 25 | prompt eval time =      10.88 ms /     1 tokens (   10.88 ms per token,    91.87 tokens per second)
+0.03.685.735 I slot print_timing: id  3 | task 25 |        eval time =     497.69 ms /    64 tokens (    7.90 ms per token,   126.59 tokens per second)
+0.03.685.735 I slot print_timing: id  3 | task 25 |       total time =     508.57 ms /    65 tokens
+0.03.685.736 I slot print_timing: id  3 | task 25 |    graphs reused =        121
+0.03.685.742 I slot      release: id  3 | task 25 | stop processing: n_tokens = 109, truncated = 0
+0.03.685.934 I slot print_timing: id  4 | task 24 | prompt eval time =      11.09 ms /     1 tokens (   11.09 ms per token,    90.15 tokens per second)
+0.03.685.935 I slot print_timing: id  4 | task 24 |        eval time =     497.66 ms /    64 tokens (    7.90 ms per token,   126.59 tokens per second)
+0.03.685.936 I slot print_timing: id  4 | task 24 |       total time =     508.75 ms /    65 tokens
+0.03.685.939 I slot print_timing: id  4 | task 24 |    graphs reused =        121
+0.03.685.944 I slot      release: id  4 | task 24 | stop processing: n_tokens = 109, truncated = 0
+0.03.686.138 I slot print_timing: id  5 | task 23 | prompt eval time =      11.30 ms /     1 tokens (   11.30 ms per token,    88.47 tokens per second)
+0.03.686.139 I slot print_timing: id  5 | task 23 |        eval time =     497.64 ms /    64 tokens (    7.90 ms per token,   126.60 tokens per second)
+0.03.686.140 I slot print_timing: id  5 | task 23 |       total time =     508.95 ms /    65 tokens
+0.03.686.140 I slot print_timing: id  5 | task 23 |    graphs reused =        121
+0.03.686.145 I slot      release: id  5 | task 23 | stop processing: n_tokens = 109, truncated = 0
+0.03.686.603 I slot get_availabl: id  2 | task -1 | selected slot by LCP similarity, f_sim_best = 1.000 (> 0.100 thold), f_keep = 0.422
+0.03.690.016 I slot launch_slot_: id  2 | task 36 | processing task, is_child = 0
+0.03.700.135 I slot get_availabl: id  3 | task -1 | selected slot by LCP similarity, f_sim_best = 1.000 (> 0.100 thold), f_keep = 0.422
+0.03.700.168 I slot launch_slot_: id  3 | task 35 | processing task, is_child = 0
+0.03.700.195 I slot get_availabl: id  4 | task -1 | selected slot by LCP similarity, f_sim_best = 1.000 (> 0.100 thold), f_keep = 0.422
+0.03.700.221 I slot launch_slot_: id  4 | task 34 | processing task, is_child = 0
+0.03.700.235 I slot get_availabl: id  5 | task -1 | selected slot by LCP similarity, f_sim_best = 1.000 (> 0.100 thold), f_keep = 0.422
+0.03.700.262 I slot launch_slot_: id  5 | task 33 | processing task, is_child = 0
+0.03.700.270 W slot   operator(): id  2 | task 36 | need to evaluate at least 1 token for each active slot (n_past = 46, task.n_tokens() = 46)
+0.03.700.270 W slot   operator(): id  2 | task 36 | n_past was set to 45
+0.03.700.288 W slot   operator(): id  3 | task 35 | need to evaluate at least 1 token for each active slot (n_past = 46, task.n_tokens() = 46)
+0.03.700.289 W slot   operator(): id  3 | task 35 | n_past was set to 45
+0.03.700.303 W slot   operator(): id  4 | task 34 | need to evaluate at least 1 token for each active slot (n_past = 46, task.n_tokens() = 46)
+0.03.700.304 W slot   operator(): id  4 | task 34 | n_past was set to 45
+0.03.700.317 W slot   operator(): id  5 | task 33 | need to evaluate at least 1 token for each active slot (n_past = 46, task.n_tokens() = 46)
+0.03.700.317 W slot   operator(): id  5 | task 33 | n_past was set to 45
+0.03.728.151 free(): invalid pointer
+W srv          stop: cancel task, id_task = 32
+0.03.728.160 I slot update_slots: id  6 | task 32 | task 32 cancelled via atomic token, releasing slot
+0.03.728.161 I slot      release: id  6 | task 32 | stop processing: n_tokens = 49, truncated = 0
+0.03.728.188 E init: the tokens of sequence 0 in the input batch have inconsistent sequence positions:
+ - the last position stored in the memory module of the context (i.e. the KV cache) for sequence 0 is X = 0
+ - the tokens for sequence 0 in the input batch have a starting position of Y = 107
+ it is required that the sequence positions remain consecutive: Y = X + 1
+0.03.728.189 E decode: failed to initialize batch
+0.03.728.189 E llama_decode: failed to decode, ret = -1
+--- Checking for Fatal Signals / Errors ---
+No explicit crash keyword found in log.
+================================================================================
+ [Step 2] Compiling Modernized phase-2 (CUDA sm_89 + AVX2)
+================================================================================
+-- llama.cpp version: 0.1.2-dev
+-- Warning: ccache not found - consider installing it for faster compilation or disable this warning with GGML_CCACHE=OFF
+-- CMAKE_SYSTEM_PROCESSOR: x86_64
+-- GGML_SYSTEM_ARCH: x86
+-- Including CPU backend
+-- x86 detected
+-- Adding CPU backend variant ggml-cpu: -msse4.2;-mf16c;-mfma;-mbmi2;-mavx;-mavx2 GGML_SSE42;GGML_F16C;GGML_FMA;GGML_BMI2;GGML_AVX;GGML_AVX2
+-- CUDA Toolkit found
+-- Using CMAKE_CUDA_ARCHITECTURES=89 CMAKE_CUDA_ARCHITECTURES_NATIVE=
+-- Could NOT find NCCL (missing: NCCL_LIBRARY NCCL_INCLUDE_DIR) 
+-- Warning: NCCL not found, performance for multiple CUDA GPUs will be suboptimal
+-- CUDA host compiler is GNU 13.1.0
+-- Including CUDA backend
+-- ggml version: 0.20.2
+-- ggml commit:  be511efb0
+-- Generating embedded license file for target: llama-app
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/krish.goradia/llama.cpp/build
+Consolidate compiler generated dependencies of target llama-common-base
+Consolidate compiler generated dependencies of target cpp-httplib
+Consolidate compiler generated dependencies of target llama-ui-embed
+Consolidate compiler generated dependencies of target vendor-hash
+Consolidate compiler generated dependencies of target ggml-base
+[  0%] Built target llama-common-base
+[  1%] Built target cpp-httplib
+[  2%] Built target vendor-hash
+[  2%] Built target llama-ui-embed
+[  5%] Built target ggml-base
+[  5%] Provisioning UI assets
+-- UI: HF stamp 'b10538' matches version, skipping HF fetch
+Consolidate compiler generated dependencies of target ggml-cpu
+[  8%] Built target ggml-cpu
+Consolidate compiler generated dependencies of target ggml-cuda
+[ 39%] Built target ggml-cuda
+Consolidate compiler generated dependencies of target ggml
+[ 39%] Built target ggml
+-- UI: gzip compression applied (/home/krish.goradia/llama.cpp/build/tools/ui/dist/_gzip)
+Consolidate compiler generated dependencies of target llama
+[ 49%] Built target llama-ui-assets
+Consolidate compiler generated dependencies of target llama-ui
+[ 57%] Built target llama-ui
+[ 78%] Built target llama
+Consolidate compiler generated dependencies of target llama-common
+Consolidate compiler generated dependencies of target mtmd
+[ 86%] Built target llama-common
+[ 95%] Built target mtmd
+Consolidate compiler generated dependencies of target server-context
+[ 98%] Built target server-context
+Consolidate compiler generated dependencies of target llama-server-impl
+[100%] Built target llama-server-impl
+Consolidate compiler generated dependencies of target llama-server
+[100%] Built target llama-server
+[  0%] Built target llama-common-base
+[  0%] Built target cpp-httplib
+[  3%] Built target ggml-base
+[  7%] Built target ggml-cpu
+[ 43%] Built target ggml-cuda
+[ 43%] Built target ggml
+[ 91%] Built target llama
+[100%] Built target llama-common
+Consolidate compiler generated dependencies of target test-server-queue
+[100%] Built target test-server-queue
+========================================================
+ Starting Lock-Free MPSC & SPSC Queue Unit & Stress Tests
+========================================================
+[TEST] Running test_basic_operations...
+  -> PASS
+[TEST] Running test_lifecycle_and_leaks...
+  -> PASS
+[TEST] Running test_multithreaded_mpsc (8 producers x 50000 items = 400000 items)...
+  -> Popped 400000 items in 20 ms (20000000 ops/sec)
+  -> PASS
+[TEST] Running test_multithreaded_mpsc (16 producers x 50000 items = 800000 items)...
+  -> Popped 800000 items in 42 ms (19047619 ops/sec)
+  -> PASS
+[TEST] Running test_atomic_cancellation_stress (8 producers x 50000 items)...
+  -> Total: 400000 | Executed: 266664 | Cancelled & Discarded in O(1): 133336
+  -> PASS
+[TEST] Running test_spsc_basic...
+  -> PASS
+[TEST] Running test_spsc_lifecycle_and_leaks...
+  -> PASS
+[TEST] Running test_spsc_high_throughput (1000000 items)...
+  -> Transferred 1000000 items in 3 ms (333333333 ops/sec)
+  -> PASS
+========================================================
+ All Lock-Free MPSC and SPSC Queue Tests PASSED!
+========================================================
+================================================================================
+ [Step 3] Running 50-Iteration Reproduction Loop on Lock-Free Build
+ Configuration: 64 Clients | 64 Requests | 8 Slots | 20% Cancel
+================================================================================
+>>> Iteration [1/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [2/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [3/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [4/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [5/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [6/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [7/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [8/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [9/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [10/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [11/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [12/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [13/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [14/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [15/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [16/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [17/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [18/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [19/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [20/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [21/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [22/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [23/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [24/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [25/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [26/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [27/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [28/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [29/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [30/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [31/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [32/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [33/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [34/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [35/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [36/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [37/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [38/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [39/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [40/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [41/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [42/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [43/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [44/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [45/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [46/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [47/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [48/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [49/50] ... PASSED (0 fails, Server: ALIVE)
+>>> Iteration [50/50] ... PASSED (0 fails, Server: ALIVE)
+================================================================================
+ REPRODUCTION LOOP COMPLETE
+ Total Iterations : 50
+ Passed (0 fails) : 50
+ Failed           : 0
+================================================================================

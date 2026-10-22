@@ -1,0 +1,6 @@
+CMAKE_BUILD_TYPE=Release
+CMAKE_BUILD_TYPE=Release
+  File "tools/server/bench/bench_concurrency.py", line 7
+    from __future__ import annotations
+    ^
+SyntaxError: future feature annotations is not defined

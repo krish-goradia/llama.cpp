@@ -1,0 +1,4 @@
+unrecognised option '--output=./profiles/nsys_phase2_6704'
+
+usage: nsys launch [<args>] [application] [<application args>]
+Try 'nsys launch --help' for more information.

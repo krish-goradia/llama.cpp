@@ -315,7 +315,6 @@ struct server_slot {
     // not in server_slot_stats to avoid copying to every task result
     std::vector<uint64_t> n_accepted_per_pos;
 
-    std::function<void(int /* id_slot */)>   callback_on_release;
     std::function<void(const server_slot &)> callback_on_reset; // called before reset()
 
     // this is for printing timings with slot progress, not part of metrics
@@ -515,8 +514,6 @@ struct server_slot {
             callback_on_reset(*this);
 
             reset();
-
-            callback_on_release(id);
         }
     }
 
@@ -1271,10 +1268,6 @@ private:
 
             SLT_TRC(slot, "new slot, n_ctx = %d\n", slot.n_ctx);
 
-            slot.callback_on_release = [this](int id_slot) {
-                queue_tasks.pop_deferred_task(id_slot);
-            };
-
             slot.callback_on_reset = [this](const server_slot & slot) {
                 // flush the generated token stats before reset()
                 if (slot.stats.n_gen > 0) {
@@ -1833,7 +1826,9 @@ private:
 
             slot.add_token(result);
             if (slot.task->params.stream) {
-                send_partial_response(slot, result, false);
+                if (!send_partial_response(slot, result, false)) {
+                    return false;
+                }
             }
         }
 
@@ -2002,7 +1997,8 @@ private:
         queue_results.send(std::move(res));
     }
 
-    void send_partial_response(server_slot & slot, const completion_token_output & tkn, bool is_progress, bool is_begin = false) {
+    bool send_partial_response(server_slot & slot, const completion_token_output & tkn, bool is_progress, bool is_begin = false) {
+        SERVER_NVTX_RANGE("result_send");
         auto res = std::make_unique<server_task_result_cmpl_partial>();
 
         res->id    = slot.task->id;
@@ -2043,10 +2039,19 @@ private:
         }
 
         if (slot.task->res_channel) {
-            slot.task->res_channel->push_and_notify(std::move(res));
+            if (!slot.task->res_channel->push_and_notify(std::move(res))) {
+                SLT_WRN(slot, "client response channel full or closed, aborting task %d\n", slot.task->id);
+                if (slot.task->cancel_token) {
+                    slot.task->cancel_token->store(true, std::memory_order_relaxed);
+                }
+                slot.stop = STOP_TYPE_LIMIT;
+                slot.has_next_token = false;
+                return false;
+            }
         } else {
             queue_results.send(std::move(res));
         }
+        return true;
     }
 
     void send_final_response(server_slot & slot) {
@@ -2458,10 +2463,7 @@ private:
 
                     queue_results.send(std::move(res));
                 } break;
-            case SERVER_TASK_TYPE_NEXT_RESPONSE:
-                {
-                    // do nothing
-                } break;
+
             case SERVER_TASK_TYPE_METRICS:
                 {
                     int n_processing_slots = 0;
@@ -2792,17 +2794,11 @@ private:
                 metrics_flush_idle();
 
                 return false; // skip further processing
-
-            } else {
-                SRV_DBG("%s", "posting NEXT_RESPONSE\n");
-
-                server_task task(SERVER_TASK_TYPE_NEXT_RESPONSE);
-                task.id = queue_tasks.get_new_id();
-                queue_tasks.post(std::move(task));
             }
         }
 
         try {
+            SERVER_NVTX_RANGE("batch_build");
             scoped_timer t(t_pre_decode, n_pre_decode);
             pre_decode();
             batch.render();
@@ -2841,6 +2837,7 @@ private:
         for (int32_t off = 0; off < batch.size(); off = off_next) {
             const int32_t n_tokens = std::min(n_batch, batch.size() - off);
             try {
+                SERVER_NVTX_RANGE("llama_decode");
                 scoped_timer t(t_decode, n_decode);
                 // TODO @ngxson : maybe handle n_batch == 1 here instead of inside decode()
 
@@ -3831,6 +3828,7 @@ private:
 
             llama_token id;
             {
+                SERVER_NVTX_RANGE("sampling");
                 scoped_timer timer(t_sampl, n_sampl);
                 id = common_sampler_sample(slot.smpl.get(), slot.ctx_tgt, tok_idx);
             }

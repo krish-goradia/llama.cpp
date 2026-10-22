@@ -1,0 +1,2101 @@
+================================================================================
+ [Step 0] Node Diagnostics
+================================================================================
+node1
+gcc (GCC) 13.1.0
+Cuda compilation tools, release 12.8, V12.8.93
+Wed Oct 21 13:11:07 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.86.10              Driver Version: 570.86.10      CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    Off |   00000000:BD:00.0 Off |                  Off |
+| N/A   44C    P8             38W /  350W |       1MiB /  49140MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+================================================================================
+ [Step 3] Running Lock-Free Unit Tests
+================================================================================
+========================================================
+ Starting Lock-Free MPSC & SPSC Queue Unit & Stress Tests
+========================================================
+[TEST] Running test_basic_operations...
+  -> PASS
+[TEST] Running test_lifecycle_and_leaks...
+  -> PASS
+[TEST] Running test_multithreaded_mpsc (8 producers x 50000 items = 400000 items)...
+  -> Popped 400000 items in 21 ms (19047619 ops/sec)
+  -> PASS
+[TEST] Running test_multithreaded_mpsc (16 producers x 50000 items = 800000 items)...
+  -> Popped 800000 items in 44 ms (18181818 ops/sec)
+  -> PASS
+[TEST] Running test_atomic_cancellation_stress (8 producers x 50000 items)...
+  -> Total: 400000 | Executed: 266664 | Cancelled & Discarded in O(1): 133336
+  -> PASS
+[TEST] Running test_spsc_basic...
+  -> PASS
+[TEST] Running test_spsc_lifecycle_and_leaks...
+  -> PASS
+[TEST] Running test_spsc_high_throughput (1000000 items)...
+  -> Transferred 1000000 items in 3 ms (333333333 ops/sec)
+  -> PASS
+========================================================
+ All Lock-Free MPSC and SPSC Queue Tests PASSED!
+========================================================
+================================================================================
+ [Step 4] Running 15-Case Systems Gold-Standard Interleaved Benchmark Suite
+================================================================================
+>>> [1/15] Case 1: 4 Clients (0.5x Slot Load)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 4 Clients | 16 Requests | 0% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 44C, 38W in 0s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3561052 (logs at /tmp/llama_server_krish.goradia_3561046.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.36 s
+ Requests Succeeded   : 16 / 16
+ Requests Cancelled   : 0 / 16
+ Requests Failed      : 0 / 16
+ Total Tokens Emitted : 1056
+ Aggregate Throughput : 778.89 tokens/sec
+ GPU Telemetry        : Start 45.0C (91.6W) -> End 53.0C (254.66W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 38W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3561307 (logs at /tmp/llama_server_krish.goradia_3561301.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.36 s
+ Requests Succeeded   : 16 / 16
+ Requests Cancelled   : 0 / 16
+ Requests Failed      : 0 / 16
+ Total Tokens Emitted : 1056
+ Aggregate Throughput : 775.96 tokens/sec
+ GPU Telemetry        : Start 44.0C (92.46W) -> End 52.0C (254.06W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3561554 (logs at /tmp/llama_server_krish.goradia_3561548.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.35 s
+ Requests Succeeded   : 16 / 16
+ Requests Cancelled   : 0 / 16
+ Requests Failed      : 0 / 16
+ Total Tokens Emitted : 1056
+ Aggregate Throughput : 783.36 tokens/sec
+ GPU Telemetry        : Start 43.0C (94.66W) -> End 51.0C (267.7W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3561801 (logs at /tmp/llama_server_krish.goradia_3561795.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.34 s
+ Requests Succeeded   : 16 / 16
+ Requests Cancelled   : 0 / 16
+ Requests Failed      : 0 / 16
+ Total Tokens Emitted : 1056
+ Aggregate Throughput : 785.15 tokens/sec
+ GPU Telemetry        : Start 43.0C (85.39W) -> End 51.0C (264.58W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3562056 (logs at /tmp/llama_server_krish.goradia_3562050.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.35 s
+ Requests Succeeded   : 16 / 16
+ Requests Cancelled   : 0 / 16
+ Requests Failed      : 0 / 16
+ Total Tokens Emitted : 1056
+ Aggregate Throughput : 781.55 tokens/sec
+ GPU Telemetry        : Start 43.0C (83.42W) -> End 51.0C (266.45W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3562303 (logs at /tmp/llama_server_krish.goradia_3562297.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.34 s
+ Requests Succeeded   : 16 / 16
+ Requests Cancelled   : 0 / 16
+ Requests Failed      : 0 / 16
+ Total Tokens Emitted : 1056
+ Aggregate Throughput : 785.79 tokens/sec
+ GPU Telemetry        : Start 42.0C (82.88W) -> End 48.0C (271.79W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 4 clients | Requests: 16 | Slots: 8 | Cancel: 0%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              781.55 ± 3.14 tok/s   783.36 ± 5.12 tok/s   +0.23%      [EQUAL]     
+ Total Wall Time (s)                  1.35 ± 0.01 s       1.35 ± 0.01 s       -0.23%      [EQUAL]     
+ TTFT Worst-Tail (p99 in ms)          27.50 ± 2.78 ms      31.89 ± 2.77 ms      +15.95%      [REGRESSION]
+ ITL Tail Jitter (p95 in ms)          5.08 ± 0.03 ms      5.08 ± 0.03 ms      +0.01%      [EQUAL]     
+ ITL Worst-Tail Jitter (p99 in ms)    6.13 ± 0.02 ms      6.16 ± 0.02 ms      +0.49%      [EQUAL]     
+==============================================================================================================
+ Stability Metric (CV%): Master=0.40% | LockFree=0.66% [HIGH STABILITY]
+==============================================================================================================
+
+>>> [2/15] Case 2: 8 Clients (1.0x Exact Saturation)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 8 Clients | 32 Requests | 0% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3562561 (logs at /tmp/llama_server_krish.goradia_3562555.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.86 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1134.42 tokens/sec
+ GPU Telemetry        : Start 42.0C (95.36W) -> End 51.0C (269.69W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3562820 (logs at /tmp/llama_server_krish.goradia_3562814.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.93 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1093.99 tokens/sec
+ GPU Telemetry        : Start 42.0C (92.08W) -> End 51.0C (269.09W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3563059 (logs at /tmp/llama_server_krish.goradia_3563053.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.91 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1103.69 tokens/sec
+ GPU Telemetry        : Start 42.0C (82.09W) -> End 52.0C (272.6W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3563298 (logs at /tmp/llama_server_krish.goradia_3563292.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.95 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1081.29 tokens/sec
+ GPU Telemetry        : Start 42.0C (86.79W) -> End 51.0C (270.31W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3563547 (logs at /tmp/llama_server_krish.goradia_3563540.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.97 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1072.93 tokens/sec
+ GPU Telemetry        : Start 42.0C (91.7W) -> End 48.0C (275.46W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3563786 (logs at /tmp/llama_server_krish.goradia_3563780.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.93 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1092.45 tokens/sec
+ GPU Telemetry        : Start 42.0C (83.24W) -> End 48.0C (263.45W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 8 clients | Requests: 32 | Slots: 8 | Cancel: 0%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              1081.29 ± 33.35 tok/s   1093.99 ± 6.10 tok/s   +1.17%      [FASTER]    
+ Total Wall Time (s)                  1.95 ± 0.06 s       1.93 ± 0.01 s       -1.16%      [IMPROVED]  
+ TTFT Worst-Tail (p99 in ms)          44.17 ± 1.79 ms      42.85 ± 0.48 ms      -2.98%      [IMPROVED]  
+ ITL Tail Jitter (p95 in ms)          7.30 ± 0.12 ms      7.22 ± 0.01 ms      -1.09%      [IMPROVED]  
+ ITL Worst-Tail Jitter (p99 in ms)    8.84 ± 0.33 ms      8.97 ± 0.13 ms      +1.48%      [REGRESSION]
+==============================================================================================================
+ Stability Metric (CV%): Master=3.04% | LockFree=0.56% 
+==============================================================================================================
+
+>>> [3/15] Case 3: 16 Clients (2.0x Moderate Backlog)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 16 Clients | 32 Requests | 0% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3564035 (logs at /tmp/llama_server_krish.goradia_3564029.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.94 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1090.89 tokens/sec
+ GPU Telemetry        : Start 42.0C (82.56W) -> End 48.0C (268.07W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3564290 (logs at /tmp/llama_server_krish.goradia_3564284.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.95 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1081.28 tokens/sec
+ GPU Telemetry        : Start 42.0C (85.18W) -> End 52.0C (254.51W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3564537 (logs at /tmp/llama_server_krish.goradia_3564531.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.94 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1090.29 tokens/sec
+ GPU Telemetry        : Start 42.0C (87.28W) -> End 51.0C (276.94W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3564796 (logs at /tmp/llama_server_krish.goradia_3564790.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.93 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1093.59 tokens/sec
+ GPU Telemetry        : Start 42.0C (94.62W) -> End 51.0C (266.51W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3565063 (logs at /tmp/llama_server_krish.goradia_3565049.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.96 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1078.95 tokens/sec
+ GPU Telemetry        : Start 42.0C (89.15W) -> End 51.0C (253.16W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3565310 (logs at /tmp/llama_server_krish.goradia_3565304.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.93 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1093.12 tokens/sec
+ GPU Telemetry        : Start 42.0C (82.81W) -> End 52.0C (276.22W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 16 clients | Requests: 32 | Slots: 8 | Cancel: 0%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              1090.89 ± 7.79 tok/s   1090.29 ± 6.18 tok/s   -0.06%      [EQUAL]     
+ Total Wall Time (s)                  1.94 ± 0.01 s       1.94 ± 0.01 s       +0.06%      [EQUAL]     
+ TTFT Worst-Tail (p99 in ms)          529.32 ± 7.99 ms      524.89 ± 5.87 ms      -0.84%      [IMPROVED]  
+ ITL Tail Jitter (p95 in ms)          7.63 ± 0.02 ms      7.35 ± 0.14 ms      -3.72%      [IMPROVED]  
+ ITL Worst-Tail Jitter (p99 in ms)    11.26 ± 0.28 ms      10.85 ± 1.89 ms      -3.61%      [IMPROVED]  
+==============================================================================================================
+ Stability Metric (CV%): Master=0.72% | LockFree=0.57% [HIGH STABILITY]
+==============================================================================================================
+
+>>> [4/15] Case 4: 32 Clients (4.0x Heavy Contention)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 32 Clients | 64 Requests | 0% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3565567 (logs at /tmp/llama_server_krish.goradia_3565561.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.87 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1090.58 tokens/sec
+ GPU Telemetry        : Start 42.0C (92.56W) -> End 49.0C (271.55W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3565842 (logs at /tmp/llama_server_krish.goradia_3565836.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.86 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1093.26 tokens/sec
+ GPU Telemetry        : Start 43.0C (84.84W) -> End 53.0C (267.43W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3566126 (logs at /tmp/llama_server_krish.goradia_3566120.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.88 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1090.02 tokens/sec
+ GPU Telemetry        : Start 43.0C (92.79W) -> End 53.0C (275.59W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3566389 (logs at /tmp/llama_server_krish.goradia_3566383.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.88 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1089.92 tokens/sec
+ GPU Telemetry        : Start 44.0C (91.24W) -> End 50.0C (281.2W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3566672 (logs at /tmp/llama_server_krish.goradia_3566666.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.89 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1087.13 tokens/sec
+ GPU Telemetry        : Start 44.0C (92.42W) -> End 54.0C (278.33W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 38W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3566936 (logs at /tmp/llama_server_krish.goradia_3566930.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.89 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1084.66 tokens/sec
+ GPU Telemetry        : Start 44.0C (88.81W) -> End 54.0C (283.1W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 32 clients | Requests: 64 | Slots: 8 | Cancel: 0%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              1089.92 ± 1.83 tok/s   1090.02 ± 4.35 tok/s   +0.01%      [EQUAL]     
+ Total Wall Time (s)                  3.88 ± 0.01 s       3.88 ± 0.02 s       -0.01%      [EQUAL]     
+ TTFT Worst-Tail (p99 in ms)          1489.67 ± 2.71 ms      1501.40 ± 13.79 ms      +0.79%      [REGRESSION]
+ ITL Tail Jitter (p95 in ms)          7.89 ± 0.03 ms      7.35 ± 0.05 ms      -6.84%      [IMPROVED]  
+ ITL Worst-Tail Jitter (p99 in ms)    11.64 ± 0.31 ms      10.69 ± 0.14 ms      -8.18%      [IMPROVED]  
+==============================================================================================================
+ Stability Metric (CV%): Master=0.17% | LockFree=0.40% [HIGH STABILITY]
+==============================================================================================================
+
+>>> [5/15] Case 5: 64 Clients (8.0x Burst Contention Storm)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 64 Clients | 64 Requests | 0% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 38W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3567221 (logs at /tmp/llama_server_krish.goradia_3567215.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.98 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1061.24 tokens/sec
+ GPU Telemetry        : Start 44.0C (83.8W) -> End 54.0C (252.48W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 38W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3567536 (logs at /tmp/llama_server_krish.goradia_3567530.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.88 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1088.03 tokens/sec
+ GPU Telemetry        : Start 44.0C (85.91W) -> End 55.0C (274.15W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 44C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3567831 (logs at /tmp/llama_server_krish.goradia_3567825.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.92 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1077.16 tokens/sec
+ GPU Telemetry        : Start 44.0C (87.51W) -> End 52.0C (277.86W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 44C, 38W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3568138 (logs at /tmp/llama_server_krish.goradia_3568132.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.95 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1070.70 tokens/sec
+ GPU Telemetry        : Start 44.0C (84.27W) -> End 52.0C (271.05W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 44C, 38W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3568457 (logs at /tmp/llama_server_krish.goradia_3568451.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.89 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1084.62 tokens/sec
+ GPU Telemetry        : Start 44.0C (84.58W) -> End 55.0C (274.23W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 44C, 38W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3568752 (logs at /tmp/llama_server_krish.goradia_3568746.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.89 s
+ Requests Succeeded   : 64 / 64
+ Requests Cancelled   : 0 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 4224
+ Aggregate Throughput : 1086.07 tokens/sec
+ GPU Telemetry        : Start 45.0C (96.1W) -> End 51.0C (277.07W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 64 clients | Requests: 64 | Slots: 8 | Cancel: 0%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              1070.70 ± 11.76 tok/s   1086.07 ± 5.79 tok/s   +1.43%      [FASTER]    
+ Total Wall Time (s)                  3.95 ± 0.04 s       3.89 ± 0.02 s       -1.41%      [IMPROVED]  
+ TTFT Worst-Tail (p99 in ms)          3438.59 ± 35.40 ms      3372.04 ± 23.53 ms      -1.94%      [IMPROVED]  
+ ITL Tail Jitter (p95 in ms)          7.90 ± 0.05 ms      7.39 ± 0.05 ms      -6.38%      [IMPROVED]  
+ ITL Worst-Tail Jitter (p99 in ms)    11.75 ± 0.50 ms      10.52 ± 0.26 ms      -10.48%      [IMPROVED]  
+==============================================================================================================
+ Stability Metric (CV%): Master=1.10% | LockFree=0.53% [HIGH STABILITY]
+==============================================================================================================
+
+>>> [6/15] Case 6: 8 Clients (10% Cancel)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 8 Clients | 32 Requests | 10% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 44C, 38W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3569070 (logs at /tmp/llama_server_krish.goradia_3569064.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.62 s
+ Requests Succeeded   : 29 / 32
+ Requests Cancelled   : 3 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1926
+ Aggregate Throughput : 734.92 tokens/sec
+ GPU Telemetry        : Start 44.0C (83.49W) -> End 52.0C (245.84W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 44C, 38W in 8s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3569305 (logs at /tmp/llama_server_krish.goradia_3569299.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.38 s
+ Requests Succeeded   : 29 / 32
+ Requests Cancelled   : 3 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1926
+ Aggregate Throughput : 810.83 tokens/sec
+ GPU Telemetry        : Start 44.0C (88.15W) -> End 50.0C (252.93W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 38W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3569556 (logs at /tmp/llama_server_krish.goradia_3569550.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.15 s
+ Requests Succeeded   : 29 / 32
+ Requests Cancelled   : 3 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1926
+ Aggregate Throughput : 896.00 tokens/sec
+ GPU Telemetry        : Start 44.0C (83.96W) -> End 50.0C (260.09W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3569807 (logs at /tmp/llama_server_krish.goradia_3569801.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.41 s
+ Requests Succeeded   : 29 / 32
+ Requests Cancelled   : 3 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1926
+ Aggregate Throughput : 800.58 tokens/sec
+ GPU Telemetry        : Start 44.0C (84.04W) -> End 51.0C (247.55W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3570066 (logs at /tmp/llama_server_krish.goradia_3570060.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.13 s
+ Requests Succeeded   : 29 / 32
+ Requests Cancelled   : 3 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1926
+ Aggregate Throughput : 906.04 tokens/sec
+ GPU Telemetry        : Start 43.0C (83.97W) -> End 48.0C (254.28W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3570317 (logs at /tmp/llama_server_krish.goradia_3570311.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.09 s
+ Requests Succeeded   : 29 / 32
+ Requests Cancelled   : 3 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1926
+ Aggregate Throughput : 922.36 tokens/sec
+ GPU Telemetry        : Start 43.0C (92.39W) -> End 50.0C (259.02W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 8 clients | Requests: 32 | Slots: 8 | Cancel: 10%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              800.58 ± 86.33 tok/s   896.00 ± 58.29 tok/s   +11.92%      [FASTER]    
+ Total Wall Time (s)                  2.41 ± 0.25 s       2.15 ± 0.15 s       -10.65%      [IMPROVED]  
+ TTFT Worst-Tail (p99 in ms)          47.17 ± 3.59 ms      42.72 ± 1.72 ms      -9.43%      [IMPROVED]  
+ ITL Tail Jitter (p95 in ms)          13.68 ± 3.62 ms      9.79 ± 2.32 ms      -28.45%      [IMPROVED]  
+ ITL Worst-Tail Jitter (p99 in ms)    14.79 ± 2.92 ms      13.80 ± 1.33 ms      -6.71%      [IMPROVED]  
+==============================================================================================================
+ Stability Metric (CV%): Master=10.61% | LockFree=6.65% 
+==============================================================================================================
+
+>>> [7/15] Case 7: 16 Clients (20% Cancel)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 16 Clients | 32 Requests | 20% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3570578 (logs at /tmp/llama_server_krish.goradia_3570572.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.10 s
+ Requests Succeeded   : 26 / 32
+ Requests Cancelled   : 6 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1740
+ Aggregate Throughput : 828.48 tokens/sec
+ GPU Telemetry        : Start 43.0C (91.53W) -> End 50.0C (256.2W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 6s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3570809 (logs at /tmp/llama_server_krish.goradia_3570803.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.84 s
+ Requests Succeeded   : 26 / 32
+ Requests Cancelled   : 6 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1740
+ Aggregate Throughput : 946.63 tokens/sec
+ GPU Telemetry        : Start 43.0C (87.68W) -> End 50.0C (255.84W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3571068 (logs at /tmp/llama_server_krish.goradia_3571062.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.08 s
+ Requests Succeeded   : 26 / 32
+ Requests Cancelled   : 6 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1740
+ Aggregate Throughput : 836.14 tokens/sec
+ GPU Telemetry        : Start 43.0C (93.16W) -> End 47.0C (257.2W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3571327 (logs at /tmp/llama_server_krish.goradia_3571321.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.12 s
+ Requests Succeeded   : 26 / 32
+ Requests Cancelled   : 6 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1740
+ Aggregate Throughput : 822.02 tokens/sec
+ GPU Telemetry        : Start 43.0C (83.47W) -> End 47.0C (257.34W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3571595 (logs at /tmp/llama_server_krish.goradia_3571589.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.14 s
+ Requests Succeeded   : 26 / 32
+ Requests Cancelled   : 6 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1740
+ Aggregate Throughput : 813.80 tokens/sec
+ GPU Telemetry        : Start 42.0C (82.62W) -> End 49.0C (258.69W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3571855 (logs at /tmp/llama_server_krish.goradia_3571849.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.09 s
+ Requests Succeeded   : 26 / 32
+ Requests Cancelled   : 6 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1740
+ Aggregate Throughput : 831.29 tokens/sec
+ GPU Telemetry        : Start 42.0C (83.54W) -> End 49.0C (246.6W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 16 clients | Requests: 32 | Slots: 8 | Cancel: 20%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              822.02 ± 7.36 tok/s   836.14 ± 65.24 tok/s   +1.72%      [FASTER]    
+ Total Wall Time (s)                  2.12 ± 0.02 s       2.08 ± 0.14 s       -1.69%      [IMPROVED]  
+ TTFT Worst-Tail (p99 in ms)          539.11 ± 11.77 ms      936.32 ± 233.36 ms      +73.68%      [REGRESSION]
+ ITL Tail Jitter (p95 in ms)          11.10 ± 0.48 ms      10.00 ± 0.43 ms      -9.86%      [IMPROVED]  
+ ITL Worst-Tail Jitter (p99 in ms)    19.82 ± 3.74 ms      16.70 ± 1.87 ms      -15.72%      [IMPROVED]  
+==============================================================================================================
+ Stability Metric (CV%): Master=0.90% | LockFree=7.49% 
+==============================================================================================================
+
+>>> [8/15] Case 8: 32 Clients (20% Cancel)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 32 Clients | 64 Requests | 20% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3572124 (logs at /tmp/llama_server_krish.goradia_3572118.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.83 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 891.27 tokens/sec
+ GPU Telemetry        : Start 42.0C (84.28W) -> End 49.0C (253.41W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3572407 (logs at /tmp/llama_server_krish.goradia_3572401.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.92 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 872.92 tokens/sec
+ GPU Telemetry        : Start 43.0C (89.92W) -> End 48.0C (252.62W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3572682 (logs at /tmp/llama_server_krish.goradia_3572676.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.73 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 915.22 tokens/sec
+ GPU Telemetry        : Start 43.0C (85.76W) -> End 51.0C (258.39W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3572957 (logs at /tmp/llama_server_krish.goradia_3572951.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.64 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 939.23 tokens/sec
+ GPU Telemetry        : Start 43.0C (83.46W) -> End 49.0C (248.99W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3573240 (logs at /tmp/llama_server_krish.goradia_3573234.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.84 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 889.35 tokens/sec
+ GPU Telemetry        : Start 43.0C (92.42W) -> End 51.0C (245.04W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 37W in 8s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3573491 (logs at /tmp/llama_server_krish.goradia_3573485.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.84 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 889.11 tokens/sec
+ GPU Telemetry        : Start 44.0C (95.03W) -> End 52.0C (245.42W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 32 clients | Requests: 64 | Slots: 8 | Cancel: 20%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              891.27 ± 28.26 tok/s   889.11 ± 21.34 tok/s   -0.24%      [EQUAL]     
+ Total Wall Time (s)                  3.83 ± 0.12 s       3.84 ± 0.09 s       +0.24%      [EQUAL]     
+ TTFT Worst-Tail (p99 in ms)          1505.87 ± 11.25 ms      2051.63 ± 392.89 ms      +36.24%      [REGRESSION]
+ ITL Tail Jitter (p95 in ms)          12.47 ± 0.78 ms      12.41 ± 0.52 ms      -0.49%      [EQUAL]     
+ ITL Worst-Tail Jitter (p99 in ms)    22.24 ± 1.04 ms      22.23 ± 2.03 ms      -0.03%      [EQUAL]     
+==============================================================================================================
+ Stability Metric (CV%): Master=3.12% | LockFree=2.39% 
+==============================================================================================================
+
+>>> [9/15] Case 9: 64 Clients (20% Cancel)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 64 Clients | 64 Requests | 20% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 38W in 6s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3573740 (logs at /tmp/llama_server_krish.goradia_3573734.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.49 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 979.01 tokens/sec
+ GPU Telemetry        : Start 44.0C (96.08W) -> End 50.0C (260.89W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 44C, 38W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3574043 (logs at /tmp/llama_server_krish.goradia_3574037.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.52 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 970.45 tokens/sec
+ GPU Telemetry        : Start 44.0C (84.41W) -> End 50.0C (252.32W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 38W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3574351 (logs at /tmp/llama_server_krish.goradia_3574345.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.78 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 904.26 tokens/sec
+ GPU Telemetry        : Start 44.0C (89.19W) -> End 51.0C (252.6W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 44C, 38W in 6s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3574622 (logs at /tmp/llama_server_krish.goradia_3574616.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.86 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 885.88 tokens/sec
+ GPU Telemetry        : Start 44.0C (94.12W) -> End 52.0C (249.02W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 44C, 38W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3574937 (logs at /tmp/llama_server_krish.goradia_3574931.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.69 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 926.33 tokens/sec
+ GPU Telemetry        : Start 44.0C (91.92W) -> End 51.0C (258.68W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 38W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3575244 (logs at /tmp/llama_server_krish.goradia_3575238.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.69 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 927.13 tokens/sec
+ GPU Telemetry        : Start 44.0C (88.62W) -> End 52.0C (256.62W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 64 clients | Requests: 64 | Slots: 8 | Cancel: 20%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              926.33 ± 46.70 tok/s   927.13 ± 33.62 tok/s   +0.09%      [EQUAL]     
+ Total Wall Time (s)                  3.69 ± 0.18 s       3.69 ± 0.13 s       -0.09%      [EQUAL]     
+ TTFT Worst-Tail (p99 in ms)          3069.74 ± 31.33 ms      3059.53 ± 35.78 ms      -0.33%      [EQUAL]     
+ ITL Tail Jitter (p95 in ms)          9.80 ± 1.84 ms      10.82 ± 1.26 ms      +10.49%      [REGRESSION]
+ ITL Worst-Tail Jitter (p99 in ms)    19.79 ± 2.04 ms      19.56 ± 1.83 ms      -1.14%      [IMPROVED]  
+==============================================================================================================
+ Stability Metric (CV%): Master=5.02% | LockFree=3.60% 
+==============================================================================================================
+
+>>> [10/15] Case 10: 16 Clients (40% Cancel Chaos)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 16 Clients | 32 Requests | 40% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3575561 (logs at /tmp/llama_server_krish.goradia_3575555.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.45 s
+ Requests Succeeded   : 19 / 32
+ Requests Cancelled   : 13 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1306
+ Aggregate Throughput : 898.98 tokens/sec
+ GPU Telemetry        : Start 44.0C (83.18W) -> End 49.0C (269.98W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3575828 (logs at /tmp/llama_server_krish.goradia_3575822.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.69 s
+ Requests Succeeded   : 19 / 32
+ Requests Cancelled   : 13 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1306
+ Aggregate Throughput : 772.30 tokens/sec
+ GPU Telemetry        : Start 44.0C (83.31W) -> End 50.0C (256.92W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3576087 (logs at /tmp/llama_server_krish.goradia_3576081.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.72 s
+ Requests Succeeded   : 19 / 32
+ Requests Cancelled   : 13 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1306
+ Aggregate Throughput : 758.13 tokens/sec
+ GPU Telemetry        : Start 43.0C (89.49W) -> End 50.0C (240.42W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3576347 (logs at /tmp/llama_server_krish.goradia_3576341.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.43 s
+ Requests Succeeded   : 19 / 32
+ Requests Cancelled   : 13 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1306
+ Aggregate Throughput : 913.25 tokens/sec
+ GPU Telemetry        : Start 43.0C (92.32W) -> End 50.0C (245.48W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3576618 (logs at /tmp/llama_server_krish.goradia_3576612.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.67 s
+ Requests Succeeded   : 19 / 32
+ Requests Cancelled   : 13 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1306
+ Aggregate Throughput : 779.96 tokens/sec
+ GPU Telemetry        : Start 42.0C (88.21W) -> End 49.0C (242.31W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3576877 (logs at /tmp/llama_server_krish.goradia_3576871.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.68 s
+ Requests Succeeded   : 19 / 32
+ Requests Cancelled   : 13 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 1306
+ Aggregate Throughput : 778.29 tokens/sec
+ GPU Telemetry        : Start 42.0C (93.14W) -> End 49.0C (257.1W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 16 clients | Requests: 32 | Slots: 8 | Cancel: 40%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              898.98 ± 73.18 tok/s   772.30 ± 10.36 tok/s   -14.09%      [SLOWER]    
+ Total Wall Time (s)                  1.45 ± 0.14 s       1.69 ± 0.02 s       +16.40%      [REGRESSION]
+ TTFT Worst-Tail (p99 in ms)          535.85 ± 10.34 ms      577.96 ± 30.17 ms      +7.86%      [REGRESSION]
+ ITL Tail Jitter (p95 in ms)          10.01 ± 0.67 ms      11.60 ± 1.54 ms      +15.86%      [REGRESSION]
+ ITL Worst-Tail Jitter (p99 in ms)    22.44 ± 2.23 ms      17.94 ± 2.45 ms      -20.05%      [IMPROVED]  
+==============================================================================================================
+ Stability Metric (CV%): Master=8.47% | LockFree=1.35% 
+==============================================================================================================
+
+>>> [11/15] Case 11: 32 Clients (40% Cancel Chaos)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 32 Clients | 64 Requests | 40% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 6s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3577111 (logs at /tmp/llama_server_krish.goradia_3577105.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.68 s
+ Requests Succeeded   : 38 / 64
+ Requests Cancelled   : 26 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2612
+ Aggregate Throughput : 973.13 tokens/sec
+ GPU Telemetry        : Start 42.0C (89.95W) -> End 49.0C (272.16W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 41C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3577394 (logs at /tmp/llama_server_krish.goradia_3577388.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.10 s
+ Requests Succeeded   : 38 / 64
+ Requests Cancelled   : 26 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2612
+ Aggregate Throughput : 842.55 tokens/sec
+ GPU Telemetry        : Start 42.0C (82.87W) -> End 50.0C (239.5W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3577669 (logs at /tmp/llama_server_krish.goradia_3577663.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.01 s
+ Requests Succeeded   : 38 / 64
+ Requests Cancelled   : 26 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2612
+ Aggregate Throughput : 868.36 tokens/sec
+ GPU Telemetry        : Start 43.0C (87.19W) -> End 48.0C (258.68W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3577945 (logs at /tmp/llama_server_krish.goradia_3577939.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.95 s
+ Requests Succeeded   : 38 / 64
+ Requests Cancelled   : 26 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2612
+ Aggregate Throughput : 886.12 tokens/sec
+ GPU Telemetry        : Start 43.0C (87.31W) -> End 50.0C (243.99W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3578228 (logs at /tmp/llama_server_krish.goradia_3578222.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.67 s
+ Requests Succeeded   : 38 / 64
+ Requests Cancelled   : 26 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2612
+ Aggregate Throughput : 977.25 tokens/sec
+ GPU Telemetry        : Start 43.0C (90.0W) -> End 48.0C (265.9W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3578491 (logs at /tmp/llama_server_krish.goradia_3578485.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.91 s
+ Requests Succeeded   : 38 / 64
+ Requests Cancelled   : 26 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2612
+ Aggregate Throughput : 898.34 tokens/sec
+ GPU Telemetry        : Start 43.0C (91.06W) -> End 50.0C (261.05W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 32 clients | Requests: 64 | Slots: 8 | Cancel: 40%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              973.13 ± 51.47 tok/s   868.36 ± 27.92 tok/s   -10.77%      [SLOWER]    
+ Total Wall Time (s)                  2.68 ± 0.16 s       3.01 ± 0.10 s       +12.07%      [REGRESSION]
+ TTFT Worst-Tail (p99 in ms)          1089.06 ± 11.99 ms      1812.69 ± 124.80 ms      +66.45%      [REGRESSION]
+ ITL Tail Jitter (p95 in ms)          11.71 ± 0.57 ms      13.56 ± 1.13 ms      +15.73%      [REGRESSION]
+ ITL Worst-Tail Jitter (p99 in ms)    21.80 ± 1.16 ms      19.25 ± 2.01 ms      -11.69%      [IMPROVED]  
+==============================================================================================================
+ Stability Metric (CV%): Master=5.44% | LockFree=3.21% 
+==============================================================================================================
+
+>>> [12/15] Case 12: 64 Clients (50% Abort Storm)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 64 Clients | 64 Requests | 50% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3578776 (logs at /tmp/llama_server_krish.goradia_3578770.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.45 s
+ Requests Succeeded   : 32 / 64
+ Requests Cancelled   : 32 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2240
+ Aggregate Throughput : 912.43 tokens/sec
+ GPU Telemetry        : Start 43.0C (89.69W) -> End 47.0C (266.03W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3579091 (logs at /tmp/llama_server_krish.goradia_3579085.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.64 s
+ Requests Succeeded   : 32 / 64
+ Requests Cancelled   : 32 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2240
+ Aggregate Throughput : 847.33 tokens/sec
+ GPU Telemetry        : Start 43.0C (83.1W) -> End 49.0C (258.84W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3579398 (logs at /tmp/llama_server_krish.goradia_3579392.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.54 s
+ Requests Succeeded   : 32 / 64
+ Requests Cancelled   : 32 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2240
+ Aggregate Throughput : 882.63 tokens/sec
+ GPU Telemetry        : Start 43.0C (91.5W) -> End 50.0C (250.21W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3579705 (logs at /tmp/llama_server_krish.goradia_3579699.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.43 s
+ Requests Succeeded   : 32 / 64
+ Requests Cancelled   : 32 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2240
+ Aggregate Throughput : 920.32 tokens/sec
+ GPU Telemetry        : Start 43.0C (85.04W) -> End 50.0C (256.69W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3580009 (logs at /tmp/llama_server_krish.goradia_3580003.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.47 s
+ Requests Succeeded   : 32 / 64
+ Requests Cancelled   : 32 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2240
+ Aggregate Throughput : 906.04 tokens/sec
+ GPU Telemetry        : Start 43.0C (83.67W) -> End 50.0C (262.43W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3580316 (logs at /tmp/llama_server_krish.goradia_3580310.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.63 s
+ Requests Succeeded   : 32 / 64
+ Requests Cancelled   : 32 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 2240
+ Aggregate Throughput : 850.48 tokens/sec
+ GPU Telemetry        : Start 43.0C (88.46W) -> End 50.0C (246.94W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 64 clients | Requests: 64 | Slots: 8 | Cancel: 50%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              912.43 ± 7.15 tok/s   850.48 ± 19.53 tok/s   -6.79%      [SLOWER]    
+ Total Wall Time (s)                  2.45 ± 0.02 s       2.63 ± 0.06 s       +7.28%      [REGRESSION]
+ TTFT Worst-Tail (p99 in ms)          1881.03 ± 9.33 ms      2066.14 ± 65.19 ms      +9.84%      [REGRESSION]
+ ITL Tail Jitter (p95 in ms)          11.95 ± 1.17 ms      13.63 ± 1.36 ms      +14.05%      [REGRESSION]
+ ITL Worst-Tail Jitter (p99 in ms)    21.25 ± 3.48 ms      22.38 ± 0.42 ms      +5.33%      [REGRESSION]
+==============================================================================================================
+ Stability Metric (CV%): Master=0.78% | LockFree=2.27% [HIGH STABILITY]
+==============================================================================================================
+
+>>> [13/15] Case 13: 16 Clients (Short Burst, Max 32 Tokens)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 16 Clients | 48 Requests | 0% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3580633 (logs at /tmp/llama_server_krish.goradia_3580627.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.87 s
+ Requests Succeeded   : 48 / 48
+ Requests Cancelled   : 0 / 48
+ Requests Failed      : 0 / 48
+ Total Tokens Emitted : 3168
+ Aggregate Throughput : 1102.72 tokens/sec
+ GPU Telemetry        : Start 43.0C (86.39W) -> End 53.0C (270.86W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3580900 (logs at /tmp/llama_server_krish.goradia_3580894.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.93 s
+ Requests Succeeded   : 48 / 48
+ Requests Cancelled   : 0 / 48
+ Requests Failed      : 0 / 48
+ Total Tokens Emitted : 3168
+ Aggregate Throughput : 1079.67 tokens/sec
+ GPU Telemetry        : Start 43.0C (90.93W) -> End 52.0C (267.07W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3581160 (logs at /tmp/llama_server_krish.goradia_3581154.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.91 s
+ Requests Succeeded   : 48 / 48
+ Requests Cancelled   : 0 / 48
+ Requests Failed      : 0 / 48
+ Total Tokens Emitted : 3168
+ Aggregate Throughput : 1087.27 tokens/sec
+ GPU Telemetry        : Start 43.0C (90.24W) -> End 53.0C (270.49W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3581407 (logs at /tmp/llama_server_krish.goradia_3581401.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.88 s
+ Requests Succeeded   : 48 / 48
+ Requests Cancelled   : 0 / 48
+ Requests Failed      : 0 / 48
+ Total Tokens Emitted : 3168
+ Aggregate Throughput : 1098.47 tokens/sec
+ GPU Telemetry        : Start 43.0C (92.17W) -> End 51.0C (269.12W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3581674 (logs at /tmp/llama_server_krish.goradia_3581668.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.95 s
+ Requests Succeeded   : 48 / 48
+ Requests Cancelled   : 0 / 48
+ Requests Failed      : 0 / 48
+ Total Tokens Emitted : 3168
+ Aggregate Throughput : 1074.46 tokens/sec
+ GPU Telemetry        : Start 43.0C (92.86W) -> End 53.0C (271.98W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3581933 (logs at /tmp/llama_server_krish.goradia_3581927.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 2.89 s
+ Requests Succeeded   : 48 / 48
+ Requests Cancelled   : 0 / 48
+ Requests Failed      : 0 / 48
+ Total Tokens Emitted : 3168
+ Aggregate Throughput : 1097.52 tokens/sec
+ GPU Telemetry        : Start 43.0C (91.33W) -> End 50.0C (269.75W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 16 clients | Requests: 48 | Slots: 8 | Cancel: 0%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              1098.47 ± 15.24 tok/s   1087.27 ± 8.96 tok/s   -1.02%      [SLOWER]    
+ Total Wall Time (s)                  2.88 ± 0.04 s       2.91 ± 0.02 s       +1.03%      [REGRESSION]
+ TTFT Worst-Tail (p99 in ms)          521.19 ± 9.23 ms      528.21 ± 5.89 ms      +1.35%      [REGRESSION]
+ ITL Tail Jitter (p95 in ms)          7.66 ± 0.11 ms      7.26 ± 0.04 ms      -5.20%      [IMPROVED]  
+ ITL Worst-Tail Jitter (p99 in ms)    11.03 ± 0.19 ms      10.81 ± 1.21 ms      -2.01%      [IMPROVED]  
+==============================================================================================================
+ Stability Metric (CV%): Master=1.40% | LockFree=0.82% [HIGH STABILITY]
+==============================================================================================================
+
+>>> [14/15] Case 14: 16 Clients (Deep Stream, Max 128 Tokens)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 16 Clients | 32 Requests | 0% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3582202 (logs at /tmp/llama_server_krish.goradia_3582196.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.94 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1090.65 tokens/sec
+ GPU Telemetry        : Start 43.0C (89.87W) -> End 53.0C (269.93W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3582458 (logs at /tmp/llama_server_krish.goradia_3582451.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.95 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1084.64 tokens/sec
+ GPU Telemetry        : Start 43.0C (83.35W) -> End 50.0C (263.87W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3582717 (logs at /tmp/llama_server_krish.goradia_3582711.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.95 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1083.42 tokens/sec
+ GPU Telemetry        : Start 43.0C (82.97W) -> End 49.0C (270.77W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3582964 (logs at /tmp/llama_server_krish.goradia_3582958.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.99 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1061.50 tokens/sec
+ GPU Telemetry        : Start 43.0C (89.26W) -> End 52.0C (271.08W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3583226 (logs at /tmp/llama_server_krish.goradia_3583220.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.96 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1079.69 tokens/sec
+ GPU Telemetry        : Start 43.0C (95.66W) -> End 51.0C (270.97W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3583473 (logs at /tmp/llama_server_krish.goradia_3583467.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 1.94 s
+ Requests Succeeded   : 32 / 32
+ Requests Cancelled   : 0 / 32
+ Requests Failed      : 0 / 32
+ Total Tokens Emitted : 2112
+ Aggregate Throughput : 1088.39 tokens/sec
+ GPU Telemetry        : Start 43.0C (84.54W) -> End 52.0C (267.77W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 16 clients | Requests: 32 | Slots: 8 | Cancel: 0%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              1079.69 ± 14.72 tok/s   1084.64 ± 2.59 tok/s   +0.46%      [EQUAL]     
+ Total Wall Time (s)                  1.96 ± 0.03 s       1.95 ± 0.00 s       -0.46%      [EQUAL]     
+ TTFT Worst-Tail (p99 in ms)          535.70 ± 7.19 ms      528.17 ± 4.30 ms      -1.40%      [IMPROVED]  
+ ITL Tail Jitter (p95 in ms)          7.66 ± 0.09 ms      7.32 ± 0.10 ms      -4.43%      [IMPROVED]  
+ ITL Worst-Tail Jitter (p99 in ms)    11.15 ± 0.09 ms      10.55 ± 0.28 ms      -5.41%      [IMPROVED]  
+==============================================================================================================
+ Stability Metric (CV%): Master=1.37% | LockFree=0.24% [HIGH STABILITY]
+==============================================================================================================
+
+>>> [15/15] Case 15: 32 Clients (Full Stress: Deep Stream 128 Tok + 20% Cancel)...
+
+[1m[36m================================================================================[0m
+[1m[36m GOLD-STANDARD TRIAL: 32 Clients | 64 Requests | 20% Cancel | 3 Interleaved Trials[0m
+[1m[36m================================================================================[0m
+
+[1m--- Trial 1/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 10s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3583730 (logs at /tmp/llama_server_krish.goradia_3583724.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.64 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 938.94 tokens/sec
+ GPU Telemetry        : Start 43.0C (92.97W) -> End 51.0C (245.85W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3584013 (logs at /tmp/llama_server_krish.goradia_3584007.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.86 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 884.44 tokens/sec
+ GPU Telemetry        : Start 43.0C (94.2W) -> End 51.0C (252.21W)
+---------------------------------------------------------------------
+[1m--- Trial 2/3 ---[0m
+  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3584288 (logs at /tmp/llama_server_krish.goradia_3584282.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.63 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 941.45 tokens/sec
+ GPU Telemetry        : Start 43.0C (88.32W) -> End 51.0C (244.7W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3584563 (logs at /tmp/llama_server_krish.goradia_3584557.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.47 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 984.87 tokens/sec
+ GPU Telemetry        : Start 43.0C (85.55W) -> End 50.0C (261.69W)
+---------------------------------------------------------------------
+[1m--- Trial 3/3 ---[0m
+  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 42C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3584851 (logs at /tmp/llama_server_krish.goradia_3584845.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.65 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 936.05 tokens/sec
+ GPU Telemetry        : Start 43.0C (87.37W) -> End 51.0C (262.37W)
+---------------------------------------------------------------------
+    [Thermal Quiescence] Waiting for GPU (Target: <=45C, <=50W)... [32mSettled at 43C, 37W in 12s.[0m
+==================================================================
+[2/3] Starting llama-server on port 40001 (8 slots)...
+==================================================================
+Server started with PID: 3585131 (logs at /tmp/llama_server_krish.goradia_3585125.log)
+Waiting for server to initialize...
+Server is READY.
+
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 3.67 s
+ Requests Succeeded   : 51 / 64
+ Requests Cancelled   : 13 / 64
+ Requests Failed      : 0 / 64
+ Total Tokens Emitted : 3418
+ Aggregate Throughput : 931.33 tokens/sec
+ GPU Telemetry        : Start 43.0C (91.92W) -> End 48.0C (254.74W)
+---------------------------------------------------------------------
+==============================================================================================================
+            SYSTEMS GOLD-STANDARD MULTI-TRIAL BENCHMARK REPORT (3 Interleaved Trials)
+==============================================================================================================
+ Concurrency: 32 clients | Requests: 64 | Slots: 8 | Cancel: 20%
+--------------------------------------------------------------------------------------------------------------
+ METRIC (Median ± StdDev)             LEGACY (MASTER)        CURRENT (LOCKFREE)     DELTA (%)    STATUS      
+--------------------------------------------------------------------------------------------------------------
+ Throughput (tokens/sec)              938.94 ± 27.39 tok/s   931.33 ± 30.42 tok/s   -0.81%      [SLOWER]    
+ Total Wall Time (s)                  3.64 ± 0.10 s       3.67 ± 0.13 s       +0.82%      [REGRESSION]
+ TTFT Worst-Tail (p99 in ms)          1481.71 ± 14.30 ms      2064.94 ± 520.85 ms      +39.36%      [REGRESSION]
+ ITL Tail Jitter (p95 in ms)          11.87 ± 1.63 ms      11.18 ± 1.57 ms      -5.80%      [IMPROVED]  
+ ITL Worst-Tail Jitter (p99 in ms)    19.32 ± 0.47 ms      22.20 ± 2.32 ms      +14.93%      [REGRESSION]
+==============================================================================================================
+ Stability Metric (CV%): Master=2.87% | LockFree=3.31% 
+==============================================================================================================
+
+================================================================================
+ All 15 Gold-Standard Cases Finished Successfully!
+================================================================================

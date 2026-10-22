@@ -1,0 +1,729 @@
+CMAKE_BUILD_TYPE=Release
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp: In instantiation of ‘void ggml_compute_forward_set_rows_impl(const ggml_compute_params*, ggml_tensor*) [with src_t = float; idx_t = long int]’:
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp:5173:83:   required from here
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp:5121:18: warning: variable ‘rs’ set but not used [-Wunused-but-set-variable]
+     const size_t rs = ggml_row_size(src0->type, nc);
+                  ^~
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp: In instantiation of ‘void ggml_compute_forward_set_rows_impl(const ggml_compute_params*, ggml_tensor*) [with src_t = float; idx_t = int]’:
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp:5175:83:   required from here
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp:5121:18: warning: variable ‘rs’ set but not used [-Wunused-but-set-variable]
+In file included from /home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp:6:
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/simd-gemm.h: In function ‘void ggml_compute_forward_flash_attn_ext_tiled(const ggml_compute_params*, ggml_tensor*, int, int)’:
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/simd-gemm.h:101:27: warning: iteration 4611686018427387903 invokes undefined behavior [-Waggressive-loop-optimizations]
+             float a = C[jj];
+                           ^
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/simd-gemm.h:100:19: note: within this loop
+         for (; jj < N; jj++) {
+                ~~~^~~
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/simd-gemm.h:79:39: warning: iteration 4611686018427387903 invokes undefined behavior [-Waggressive-loop-optimizations]
+                 float a = C[i * N + jj];
+                                       ^
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/simd-gemm.h:77:19: note: within this loop
+         for (; jj < N; jj++) {
+                ~~~^~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp: In function ‘std::vector<std::unique_ptr<server_schema::field> > server_schema::make_llama_cmpl_schema(const common_params&, task_params&)’:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:40:69: error: class template argument deduction failed:
+     add((new field_num("sse_ping_interval", params.sse_ping_interval))
+                                                                     ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:40:69: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:40:69: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("sse_ping_interval", params.sse_ping_interval))
+                                                                     ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:40:69: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("sse_ping_interval", params.sse_ping_interval))
+                                                                     ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:44:53: error: class template argument deduction failed:
+     add((new field_num("n_predict", params.n_predict))
+                                                     ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:44:53: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:44:53: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_predict", params.n_predict))
+                                                     ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:44:53: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_predict", params.n_predict))
+                                                     ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:50:51: error: class template argument deduction failed:
+     add((new field_num("n_indent", params.n_indent))
+                                                   ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:50:51: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:50:51: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_indent", params.n_indent))
+                                                   ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:50:51: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_indent", params.n_indent))
+                                                   ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:54:47: error: class template argument deduction failed:
+     add((new field_num("n_keep", params.n_keep))
+                                               ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:54:47: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:54:47: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_keep", params.n_keep))
+                                               ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:54:47: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_keep", params.n_keep))
+                                               ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:58:53: error: class template argument deduction failed:
+     add((new field_num("n_discard", params.n_discard))
+                                                     ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:58:53: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:58:53: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_discard", params.n_discard))
+                                                     ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:58:53: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_discard", params.n_discard))
+                                                     ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:62:47: error: class template argument deduction failed:
+     add((new field_num("n_cmpl", params.n_cmpl))
+                                               ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:62:47: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:62:47: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_cmpl", params.n_cmpl))
+                                               ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:62:47: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_cmpl", params.n_cmpl))
+                                               ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:67:61: error: class template argument deduction failed:
+     add((new field_num("n_cache_reuse", params.n_cache_reuse))
+                                                             ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:67:61: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:67:61: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_cache_reuse", params.n_cache_reuse))
+                                                             ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:67:61: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_cache_reuse", params.n_cache_reuse))
+                                                             ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:74:67: error: class template argument deduction failed:
+     add((new field_num("t_max_predict_ms", params.t_max_predict_ms))
+                                                                   ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:74:67: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:74:67: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("t_max_predict_ms", params.t_max_predict_ms))
+                                                                   ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:74:67: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("t_max_predict_ms", params.t_max_predict_ms))
+                                                                   ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:89:54: error: class template argument deduction failed:
+     add((new field_num("top_k", params.sampling.top_k))
+                                                      ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:89:54: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:89:54: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("top_k", params.sampling.top_k))
+                                                      ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:89:54: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("top_k", params.sampling.top_k))
+                                                      ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:93:54: error: class template argument deduction failed:
+     add((new field_num("top_p", params.sampling.top_p))
+                                                      ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:93:54: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:93:54: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("top_p", params.sampling.top_p))
+                                                      ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:93:54: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("top_p", params.sampling.top_p))
+                                                      ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:97:54: error: class template argument deduction failed:
+     add((new field_num("min_p", params.sampling.min_p))
+                                                      ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:97:54: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:97:54: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("min_p", params.sampling.min_p))
+                                                      ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:97:54: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("min_p", params.sampling.min_p))
+                                                      ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:101:66: error: class template argument deduction failed:
+     add((new field_num("top_n_sigma", params.sampling.top_n_sigma))
+                                                                  ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:101:66: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:101:66: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("top_n_sigma", params.sampling.top_n_sigma))
+                                                                  ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:101:66: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("top_n_sigma", params.sampling.top_n_sigma))
+                                                                  ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:104:74: error: class template argument deduction failed:
+     add((new field_num("xtc_probability", params.sampling.xtc_probability))
+                                                                          ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:104:74: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:104:74: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("xtc_probability", params.sampling.xtc_probability))
+                                                                          ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:104:74: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("xtc_probability", params.sampling.xtc_probability))
+                                                                          ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:108:70: error: class template argument deduction failed:
+     add((new field_num("xtc_threshold", params.sampling.xtc_threshold))
+                                                                      ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:108:70: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:108:70: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("xtc_threshold", params.sampling.xtc_threshold))
+                                                                      ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:108:70: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("xtc_threshold", params.sampling.xtc_threshold))
+                                                                      ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:112:58: error: class template argument deduction failed:
+     add((new field_num("typical_p", params.sampling.typ_p))
+                                                          ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:112:58: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:112:58: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("typical_p", params.sampling.typ_p))
+                                                          ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:112:58: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("typical_p", params.sampling.typ_p))
+                                                          ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:116:59: error: class template argument deduction failed:
+     add((new field_num("temperature", params.sampling.temp))
+                                                           ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:116:59: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:116:59: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("temperature", params.sampling.temp))
+                                                           ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:116:59: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("temperature", params.sampling.temp))
+                                                           ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:120:72: error: class template argument deduction failed:
+     add((new field_num("dynatemp_range", params.sampling.dynatemp_range))
+                                                                        ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:120:72: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:120:72: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("dynatemp_range", params.sampling.dynatemp_range))
+                                                                        ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:120:72: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("dynatemp_range", params.sampling.dynatemp_range))
+                                                                        ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:123:78: error: class template argument deduction failed:
+     add((new field_num("dynatemp_exponent", params.sampling.dynatemp_exponent))
+                                                                              ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:123:78: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:123:78: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("dynatemp_exponent", params.sampling.dynatemp_exponent))
+                                                                              ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:123:78: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("dynatemp_exponent", params.sampling.dynatemp_exponent))
+                                                                              ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:126:71: error: class template argument deduction failed:
+     add((new field_num("repeat_last_n", params.sampling.penalty_last_n))
+                                                                       ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:126:71: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:126:71: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("repeat_last_n", params.sampling.penalty_last_n))
+                                                                       ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:126:71: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("repeat_last_n", params.sampling.penalty_last_n))
+                                                                       ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:130:72: error: class template argument deduction failed:
+     add((new field_num("repeat_penalty", params.sampling.penalty_repeat))
+                                                                        ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:130:72: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:130:72: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("repeat_penalty", params.sampling.penalty_repeat))
+                                                                        ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:130:72: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("repeat_penalty", params.sampling.penalty_repeat))
+                                                                        ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:133:73: error: class template argument deduction failed:
+     add((new field_num("frequency_penalty", params.sampling.penalty_freq))
+                                                                         ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:133:73: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:133:73: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("frequency_penalty", params.sampling.penalty_freq))
+                                                                         ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:133:73: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("frequency_penalty", params.sampling.penalty_freq))
+                                                                         ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:136:75: error: class template argument deduction failed:
+     add((new field_num("presence_penalty", params.sampling.penalty_present))
+                                                                           ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:136:75: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:136:75: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("presence_penalty", params.sampling.penalty_present))
+                                                                           ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:136:75: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("presence_penalty", params.sampling.penalty_present))
+                                                                           ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:139:72: error: class template argument deduction failed:
+     add((new field_num("dry_multiplier", params.sampling.dry_multiplier))
+                                                                        ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:139:72: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:139:72: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("dry_multiplier", params.sampling.dry_multiplier))
+                                                                        ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:139:72: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("dry_multiplier", params.sampling.dry_multiplier))
+                                                                        ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:142:60: error: class template argument deduction failed:
+     add((new field_num("dry_base", params.sampling.dry_base))
+                                                            ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:142:60: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:142:60: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("dry_base", params.sampling.dry_base))
+                                                            ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:142:60: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("dry_base", params.sampling.dry_base))
+                                                            ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:149:80: error: class template argument deduction failed:
+     add((new field_num("dry_allowed_length", params.sampling.dry_allowed_length))
+                                                                                ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:149:80: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:149:80: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("dry_allowed_length", params.sampling.dry_allowed_length))
+                                                                                ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:149:80: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("dry_allowed_length", params.sampling.dry_allowed_length))
+                                                                                ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:153:80: error: class template argument deduction failed:
+     add((new field_num("dry_penalty_last_n", params.sampling.dry_penalty_last_n))
+                                                                                ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:153:80: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:153:80: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("dry_penalty_last_n", params.sampling.dry_penalty_last_n))
+                                                                                ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:153:80: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("dry_penalty_last_n", params.sampling.dry_penalty_last_n))
+                                                                                ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:157:60: error: class template argument deduction failed:
+     add((new field_num("mirostat", params.sampling.mirostat))
+                                                            ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:157:60: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:157:60: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("mirostat", params.sampling.mirostat))
+                                                            ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:157:60: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("mirostat", params.sampling.mirostat))
+                                                            ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:161:68: error: class template argument deduction failed:
+     add((new field_num("mirostat_tau", params.sampling.mirostat_tau))
+                                                                    ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:161:68: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:161:68: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("mirostat_tau", params.sampling.mirostat_tau))
+                                                                    ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:161:68: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("mirostat_tau", params.sampling.mirostat_tau))
+                                                                    ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:164:68: error: class template argument deduction failed:
+     add((new field_num("mirostat_eta", params.sampling.mirostat_eta))
+                                                                    ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:164:68: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:164:68: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("mirostat_eta", params.sampling.mirostat_eta))
+                                                                    ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:164:68: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("mirostat_eta", params.sampling.mirostat_eta))
+                                                                    ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:167:74: error: class template argument deduction failed:
+     add((new field_num("adaptive_target", params.sampling.adaptive_target))
+                                                                          ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:167:74: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:167:74: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("adaptive_target", params.sampling.adaptive_target))
+                                                                          ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:167:74: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("adaptive_target", params.sampling.adaptive_target))
+                                                                          ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:171:72: error: class template argument deduction failed:
+     add((new field_num("adaptive_decay", params.sampling.adaptive_decay))
+                                                                        ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:171:72: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:171:72: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("adaptive_decay", params.sampling.adaptive_decay))
+                                                                        ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:171:72: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("adaptive_decay", params.sampling.adaptive_decay))
+                                                                        ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:176:52: error: class template argument deduction failed:
+     add((new field_num("seed", params.sampling.seed))
+                                                    ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:176:52: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:176:52: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("seed", params.sampling.seed))
+                                                    ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:176:52: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("seed", params.sampling.seed))
+                                                    ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:179:58: error: class template argument deduction failed:
+     add((new field_num("n_probs", params.sampling.n_probs))
+                                                          ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:179:58: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:179:58: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_probs", params.sampling.n_probs))
+                                                          ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:179:58: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("n_probs", params.sampling.n_probs))
+                                                          ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:183:60: error: class template argument deduction failed:
+     add((new field_num("min_keep", params.sampling.min_keep))
+                                                            ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:183:60: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:183:60: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("min_keep", params.sampling.min_keep))
+                                                            ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:183:60: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("min_keep", params.sampling.min_keep))
+                                                            ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:383:90: error: class template argument deduction failed:
+     add((new field_num("reasoning_budget_tokens", params.sampling.reasoning_budget_tokens))
+                                                                                          ^
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:383:90: error: no matching function for call to ‘field_num()’
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note: candidate: ‘template<class T> server_schema::field_num(const char*, T&)-> server_schema::field_num<T>’
+ field_num(const char *, T &) -> field_num<T>;
+ ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:79:1: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:383:90: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("reasoning_budget_tokens", params.sampling.reasoning_budget_tokens))
+                                                                                          ^
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note: candidate: ‘template<class T> field_num(const char*, T&)-> server_schema::field_num<T>’
+     field_num(const char * n, T & val) : field(n), val(val) {}
+     ^~~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-schema.h:61:5: note:   template argument deduction/substitution failed:
+/home/krish.goradia/llama.cpp/tools/server/server-schema.cpp:383:90: note:   candidate expects 2 arguments, 0 provided
+     add((new field_num("reasoning_budget_tokens", params.sampling.reasoning_budget_tokens))
+                                                                                          ^
+gmake[3]: *** [tools/server/CMakeFiles/server-context.dir/build.make:188: tools/server/CMakeFiles/server-context.dir/server-schema.cpp.o] Error 1
+gmake[3]: *** Waiting for unfinished jobs....
+gmake[2]: *** [CMakeFiles/Makefile2:5086: tools/server/CMakeFiles/server-context.dir/all] Error 2
+gmake[1]: *** [CMakeFiles/Makefile2:5024: tools/server/CMakeFiles/llama-server.dir/rule] Error 2
+gmake: *** [Makefile:1791: llama-server] Error 2

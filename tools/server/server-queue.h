@@ -31,7 +31,7 @@ private:
     // pinned deferred tasks per slot (id_slot >= 0)
     std::unordered_map<int, std::queue<server_task>> queue_tasks_pinned;
     // tasks declined while yielding, drained first before new tasks
-    std::deque<server_task> queue_tasks_unhandled;
+    std::queue<server_task> queue_tasks_unhandled;
 
     std::mutex mutex_tasks;
     std::condition_variable condition_tasks;
@@ -66,10 +66,6 @@ public:
 
     // Get the next id for creating a new task
     int get_new_id();
-
-    // Call when the state of one slot is changed, it will move one task from deferred to main queue
-    // prioritize tasks that use the specified slot (otherwise, pop the first deferred task)
-    void pop_deferred_task(int id_slot);
 
     // if sleeping, request exiting sleep state and wait until it is done
     // returns immediately if not sleeping
@@ -146,7 +142,6 @@ public:
     }
 
 private:
-    void cleanup_pending_task(int id_target);
 
     // process all pending tasks in the queue
     // returns true if the queue is terminated, false if there is no more task to process
@@ -165,23 +160,44 @@ struct response_channel {
     std::condition_variable cv;
     std::atomic<bool> closed{false};
 
-    void push_and_notify(server_task_result_ptr && res) {
-        while (!ring.try_push(std::move(res))) {
-            if (closed.load(std::memory_order_relaxed)) {
-                return; // channel closed, drop remaining outputs
-            }
-            cv.notify_one();
-            std::this_thread::yield();
+#if defined(LLAMA_SERVER_DISABLE_SPSC)
+    static std::mutex & get_global_resp_mutex() {
+        static std::mutex global_mtx;
+        return global_mtx;
+    }
+#endif
+
+    bool push_and_notify(server_task_result_ptr && res) {
+        if (closed.load(std::memory_order_relaxed)) {
+            return false;
         }
-        cv.notify_one();
+#if defined(LLAMA_SERVER_DISABLE_SPSC)
+        std::lock_guard<std::mutex> global_lock(get_global_resp_mutex());
+#endif
+        if (!ring.try_push(std::move(res))) {
+            // channel full: client is too slow or stalled
+            close();
+            return false;
+        }
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            cv.notify_one();
+        }
+        return true;
     }
 
     server_task_result_ptr pop_wait(int timeout_seconds) {
+#if defined(LLAMA_SERVER_DISABLE_SPSC)
+        std::unique_lock<std::mutex> global_lock(get_global_resp_mutex());
+#endif
         server_task_result_ptr res;
         if (ring.try_pop(res)) {
             return res;
         }
         std::unique_lock<std::mutex> lock(mtx);
+#if defined(LLAMA_SERVER_DISABLE_SPSC)
+        global_lock.unlock();
+#endif
         cv.wait_for(lock, std::chrono::seconds(timeout_seconds), [&] {
             return ring.try_pop(res) || closed.load(std::memory_order_relaxed);
         });
@@ -190,6 +206,7 @@ struct response_channel {
 
     void close() {
         closed.store(true, std::memory_order_release);
+        std::lock_guard<std::mutex> lock(mtx);
         cv.notify_all();
     }
 };

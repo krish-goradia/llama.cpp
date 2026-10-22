@@ -1,0 +1,66 @@
+CMAKE_BUILD_TYPE=Release
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp: In instantiation of ‘void ggml_compute_forward_set_rows_impl(const ggml_compute_params*, ggml_tensor*) [with src_t = float; idx_t = long int]’:
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp:5173:83:   required from here
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp:5121:18: warning: variable ‘rs’ set but not used [-Wunused-but-set-variable]
+     const size_t rs = ggml_row_size(src0->type, nc);
+                  ^~
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp: In instantiation of ‘void ggml_compute_forward_set_rows_impl(const ggml_compute_params*, ggml_tensor*) [with src_t = float; idx_t = int]’:
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp:5175:83:   required from here
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp:5121:18: warning: variable ‘rs’ set but not used [-Wunused-but-set-variable]
+In file included from /home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/ops.cpp:6:
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/simd-gemm.h: In function ‘void ggml_compute_forward_flash_attn_ext_tiled(const ggml_compute_params*, ggml_tensor*, int, int)’:
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/simd-gemm.h:101:27: warning: iteration 4611686018427387903 invokes undefined behavior [-Waggressive-loop-optimizations]
+             float a = C[jj];
+                           ^
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/simd-gemm.h:100:19: note: within this loop
+         for (; jj < N; jj++) {
+                ~~~^~~
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/simd-gemm.h:79:39: warning: iteration 4611686018427387903 invokes undefined behavior [-Waggressive-loop-optimizations]
+                 float a = C[i * N + jj];
+                                       ^
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cpu/simd-gemm.h:77:19: note: within this loop
+         for (; jj < N; jj++) {
+                ~~~^~~
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::__cxx11::path::parent_path() const'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::relative(std::filesystem::__cxx11::path const&, std::filesystem::__cxx11::path const&, std::error_code&)'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::__cxx11::directory_iterator::operator*() const'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::__cxx11::path::has_parent_path() const'
+../../bin/libllama-common.so.0.1.2: undefined reference to `typeinfo for std::filesystem::__cxx11::filesystem_error'
+../../bin/libggml.so.0.20.2: undefined reference to `std::filesystem::__cxx11::path::_M_find_extension() const'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::symlink_status(std::filesystem::__cxx11::path const&)'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::__cxx11::path::has_root_directory() const'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::file_size(std::filesystem::__cxx11::path const&, std::error_code&)'
+../../bin/libggml.so.0.20.2: undefined reference to `std::filesystem::current_path[abi:cxx11]()'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::status(std::filesystem::__cxx11::path const&)'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::__cxx11::path::compare(std::filesystem::__cxx11::path const&) const'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::__cxx11::path::_M_split_cmpts()'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::__cxx11::directory_iterator::increment(std::error_code&)'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::temp_directory_path[abi:cxx11](std::error_code&)'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::create_directories(std::filesystem::__cxx11::path const&)'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::__cxx11::recursive_directory_iterator::~recursive_directory_iterator()'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::__cxx11::recursive_directory_iterator::operator*() const'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::__cxx11::path::lexically_relative(std::filesystem::__cxx11::path const&) const'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::__cxx11::path::lexically_normal() const'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::__cxx11::directory_iterator::operator++()'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::symlink_status(std::filesystem::__cxx11::path const&, std::error_code&)'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::remove_all(std::filesystem::__cxx11::path const&, std::error_code&)'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::current_path[abi:cxx11](std::error_code&)'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::copy(std::filesystem::__cxx11::path const&, std::filesystem::__cxx11::path const&, std::filesystem::copy_options, std::error_code&)'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::__cxx11::directory_iterator::directory_iterator(std::filesystem::__cxx11::path const&, std::filesystem::directory_options, std::error_code*)'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::create_directories(std::filesystem::__cxx11::path const&, std::error_code&)'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::absolute(std::filesystem::__cxx11::path const&)'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::rename(std::filesystem::__cxx11::path const&, std::filesystem::__cxx11::path const&, std::error_code&)'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::remove(std::filesystem::__cxx11::path const&, std::error_code&)'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::__cxx11::recursive_directory_iterator::recursive_directory_iterator(std::filesystem::__cxx11::path const&, std::filesystem::directory_options, std::error_code*)'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::status(std::filesystem::__cxx11::path const&, std::error_code&)'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::__cxx11::path::root_path() const'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::__cxx11::recursive_directory_iterator::operator++()'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::file_size(std::filesystem::__cxx11::path const&)'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::create_symlink(std::filesystem::__cxx11::path const&, std::filesystem::__cxx11::path const&, std::error_code&)'
+../../bin/libllama-common.so.0.1.2: undefined reference to `std::filesystem::read_symlink(std::filesystem::__cxx11::path const&, std::error_code&)'
+../../bin/libllama-server-impl.so: undefined reference to `std::filesystem::__cxx11::path::has_filename() const'
+collect2: error: ld returned 1 exit status
+gmake[3]: *** [tools/server/CMakeFiles/llama-server.dir/build.make:109: bin/llama-server] Error 1
+gmake[2]: *** [CMakeFiles/Makefile2:5017: tools/server/CMakeFiles/llama-server.dir/all] Error 2
+gmake[1]: *** [CMakeFiles/Makefile2:5024: tools/server/CMakeFiles/llama-server.dir/rule] Error 2
+gmake: *** [Makefile:1791: llama-server] Error 2
