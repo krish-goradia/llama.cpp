@@ -1,6 +1,20 @@
 #!/usr/bin/env bash
+# ==============================================================================
+# llama.cpp Automated Server Build, Launch & Benchmark Script
+# ==============================================================================
+# Usage:
+#   ./run_bench.sh [options]
+#
+# Examples:
+#   ./run_bench.sh -c 8 -n 32 --cancel-rate 0.0
+#   ./run_bench.sh -c 8 -n 32 --cancel-rate 0.2
+#   ./run_bench.sh -c 16 -n 32 --cancel-rate 0.0
+#   ./run_bench.sh --no-build  # Skip compilation step
+# ==============================================================================
+
 set -e
 
+# Default settings
 if [ -z "$MODEL_PATH" ]; then
   if [ -f "my_models/3b.gguf" ]; then
     MODEL_PATH="my_models/3b.gguf"
@@ -22,6 +36,7 @@ DO_BUILD=true
 RESTART_SERVER=true
 SERVER_LOG="/tmp/llama_server_${USER:-bench}_$$.log"
 
+# Parse command-line flags
 while [[ $# -gt 0 ]]; do
   case $1 in
     -c|--concurrency)
@@ -72,6 +87,10 @@ while [[ $# -gt 0 ]]; do
       SEED="$2"
       shift 2
       ;;
+    --threads-http)
+      THREADS_HTTP="$2"
+      shift 2
+      ;;
     --json-out)
       JSON_OUT="$2"
       shift 2
@@ -81,7 +100,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -h|--help)
-      echo "Usage: ./run_bench.sh [-c CONCURRENCY] [-n REQUESTS] [-k RATE] [--max-tokens TOKENS] [-m MODEL] [-s SLOTS] [-p PORT] [--ctx CTX] [--no-build] [--seed SEED]"
+      echo "Usage: ./run_bench.sh [-c CONCURRENCY] [-n REQUESTS] [-k|--cancel|--cancel-rate RATE] [--max-tokens TOKENS] [-m MODEL] [-s SLOTS] [-p PORT] [--ctx CTX] [--threads-http N] [--no-build] [--keep-server]"
       exit 0
       ;;
     *)
@@ -94,29 +113,52 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# 1. Step 1: Incremental Build
 if [ "$DO_BUILD" = true ]; then
+  echo "=================================================================="
+  echo "[1/3] Building llama-server (Release mode)..."
+  echo "=================================================================="
   cmake --build build --config Release -j --target llama-server
+  echo "Build complete."
+  echo ""
 fi
 
+# 2. Step 2: Manage llama-server lifecycle
 if [ "$RESTART_SERVER" = true ]; then
+  echo "=================================================================="
+  echo "[2/3] Starting llama-server on port $PORT ($SLOTS slots)..."
+  echo "=================================================================="
+  
+  # Kill any existing llama-server instances
   pkill -9 -f "llama-server" 2>/dev/null || true
   sleep 1
 
+  # Launch server in background (with optional core pinning)
   SERVER_PREFIX=""
   if [ "$PIN_CORES" = "true" ] && command -v taskset &>/dev/null; then
     SERVER_PREFIX="taskset -c ${SERVER_CORES:-0-15}"
     echo "Core Pinning: Pinning server to cores ${SERVER_CORES:-0-15}"
   fi
 
+  HTTP_THREADS_ARG=""
+  if [ -n "$THREADS_HTTP" ]; then
+    HTTP_THREADS_ARG="--threads-http $THREADS_HTTP"
+    echo "Configured HTTP Threads: $THREADS_HTTP"
+  fi
+
   $SERVER_PREFIX ./build/bin/llama-server \
     -m "$MODEL_PATH" \
     -c "$CTX" \
     -np "$SLOTS" \
-    --port "$PORT" > "$SERVER_LOG" 2>&1 &
+    --port "$PORT" \
+    $HTTP_THREADS_ARG \
+    ${SERVER_EXTRA_ARGS:-} > "$SERVER_LOG" 2>&1 &
   
   SERVER_PID=$!
   echo "Server started with PID: $SERVER_PID (logs at $SERVER_LOG)"
 
+  # Wait for server health endpoint to be ready
+  echo "Waiting for server to initialize..."
   READY=false
   for i in {1..30}; do
     if curl -s "http://localhost:${PORT}/health" | grep -q "ok"; then
@@ -128,11 +170,26 @@ if [ "$RESTART_SERVER" = true ]; then
 
   if [ "$READY" = false ]; then
     echo "ERROR: Server failed to start within 30 seconds."
+    echo "--- Server Logs ---"
     cat "$SERVER_LOG" | tail -n 30
     exit 1
   fi
   echo "Server is READY."
+  echo ""
+else
+  echo "[2/3] Using existing running llama-server."
+  echo ""
 fi
+
+# 3. Step 3: Run Benchmark
+echo "=================================================================="
+echo "[3/3] Running Concurrency Benchmark..."
+echo "  Concurrency : $CONCURRENCY clients"
+echo "  Requests    : $REQUESTS total"
+echo "  Max Tokens  : $MAX_TOKENS"
+echo "  Cancel Rate : $CANCEL_RATE"
+echo "=================================================================="
+echo ""
 
 JSON_ARG=""
 if [ -n "$JSON_OUT" ]; then

@@ -1,0 +1,44 @@
+CMAKE_BUILD_TYPE=Release
+CMAKE_BUILD_TYPE=Release
+CMAKE_BUILD_TYPE=Release
+CMAKE_BUILD_TYPE=Release
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 381568 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 382838 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 384105 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 385460 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 387103 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 388369 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 389633 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 390901 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 392169 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 393444 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 394780 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 396048 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 397328 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 398526 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 399865 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 401133 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 402371 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 403637 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 404914 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 406195 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 407477 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 408763 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 410037 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 411304 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 412572 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 413838 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 415112 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 416378 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 417644 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 418918 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 420185 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 421451 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 422725 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 424023 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 425296 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 426571 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 427839 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 429105 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 429585 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1
+/var/spool/slurm/slurmd/job06713/slurm_script: line 116: 431128 Killed                  taskset -c 0-15 "$BIN_PATH" -m "$MODEL_FILE" -c 16384 -np "$SLOTS" --port "$BENCH_PORT" > "/tmp/llama_srv_$$.log" 2>&1

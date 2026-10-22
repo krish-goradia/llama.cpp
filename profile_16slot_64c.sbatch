@@ -131,7 +131,7 @@ kill_current_server() {
 
 wait_server_ready() {
     local port="$1"
-    for r in {1..120}; do
+    for r in {1..120}; do # allow up to 60s for 16-slot CUDA allocation
         if curl -s "http://localhost:${port}/health" 2>/dev/null | grep -q "ok"; then
             return 0
         fi
@@ -140,6 +140,7 @@ wait_server_ready() {
     return 1
 }
 
+# Warmup helper: Prime CUDA context, page tables, and KV scratchpads
 prime_server() {
     local port="$1"
     echo "Priming server with warmup request..."
@@ -148,6 +149,13 @@ prime_server() {
       -d '{"prompt":"Warmup request to initialize GPU memory buffers","n_predict":4}' > /dev/null 2>&1 || true
 }
 
+# ==============================================================================
+# PROFILING HARNESS FUNCTION
+# Evaluates a single binary target across:
+#   1. Unprofiled Baseline (512 requests, 64 concurrency)
+#   2. Nsight Systems (nsys launch/start/stop, steady-state capture)
+#   3. Linux perf (Process-wide -p, 499Hz DWARF, dso,sym separation)
+# ==============================================================================
 profile_target() {
     local label="$1"
     local bin_path="$2"
@@ -162,7 +170,7 @@ profile_target() {
     echo "################################################################################"
 
     # --------------------------------------------------------------------------
-    # Sub-Step A: Unprofiled Baseline
+    # Sub-Step A: Unprofiled Baseline (Reference Throughput)
     # --------------------------------------------------------------------------
     echo "--------------------------------------------------------------------------------"
     echo " [$label] Sub-Step A: Unprofiled Steady-State Baseline (512 Requests, 64 Clients)"
@@ -203,7 +211,7 @@ profile_target() {
     sleep 1
 
     # --------------------------------------------------------------------------
-    # Sub-Step B: NVIDIA Nsight Systems
+    # Sub-Step B: NVIDIA Nsight Systems (Targeted Steady-State Capture)
     # --------------------------------------------------------------------------
     echo "--------------------------------------------------------------------------------"
     echo " [$label] Sub-Step B: NVIDIA Nsight Systems (CUDA + NVTX Steady-State Capture)"
@@ -216,6 +224,7 @@ profile_target() {
     LOG_NSYS="./profiles/server_${label}_nsys_${JOB_ID}.log"
     JSON_NSYS="./profiles/bench_${label}_nsys_${JOB_ID}.json"
 
+    # Check if nsys CLI supports launch / start session workflow
     NSYS_MODE="profile_delay"
     if nsys launch --help >/dev/null 2>&1; then
         NSYS_MODE="launch_session"
@@ -226,14 +235,14 @@ profile_target() {
         nsys launch \
           --trace=cuda,nvtx \
           --cuda-graph-trace=node \
-          --sample=cpu \
           "$bin_path" \
             -m "$MODEL_FILE" \
-            -c 32768 \
+            -c 16384 \
             -np 16 \
             --port "$PORT_NSYS" > "$LOG_NSYS" 2>&1 &
         CURRENT_WRAPPER_PID=$!
 
+        # Resolve exact server child PID (anchoring binary name to avoid wrapper)
         for t in {1..40}; do
             CURRENT_SRV_PID=$(pgrep -P "$CURRENT_WRAPPER_PID" llama-server 2>/dev/null || pgrep -f "^${bin_path}.*--port ${PORT_NSYS}" 2>/dev/null | head -n 1 || echo "")
             [ -n "$CURRENT_SRV_PID" ] && break
@@ -267,6 +276,7 @@ profile_target() {
 
     prime_server "$PORT_NSYS"
 
+    # Trigger profiler start explicitly if launch session is active
     if [ "$NSYS_MODE" = "launch_session" ]; then
         echo "Starting nsys capture right before steady-state client load..."
         nsys start --output="$NSYS_OUT" --force-overwrite=true || true
@@ -295,10 +305,15 @@ profile_target() {
           --report cuda_api_sum,cuda_gpu_kern_sum,nvtx_sum \
           "${NSYS_OUT}.nsys-rep" > "./profiles/nsys_stats_${label}_${JOB_ID}.txt" 2>&1 || true
         head -n 45 "./profiles/nsys_stats_${label}_${JOB_ID}.txt" || true
+
+        echo "--------------------------------------------------------------------------------"
+        echo " [$label] GPU Busy/Idle & Bubble Gap Analysis (${NSYS_OUT}.nsys-rep)"
+        echo "--------------------------------------------------------------------------------"
+        python3 gpu_gap_analysis.py "${NSYS_OUT}.nsys-rep" --bubble-us 50 | tee "./profiles/gpu_gap_${label}_${JOB_ID}.txt" || true
     fi
 
     # --------------------------------------------------------------------------
-    # Sub-Step C: Linux perf
+    # Sub-Step C: Linux perf (Process-Wide, 499Hz DWARF, dso,sym separation)
     # --------------------------------------------------------------------------
     echo "--------------------------------------------------------------------------------"
     echo " [$label] Sub-Step C: Linux perf (Process-Wide, 499Hz DWARF, Context Switches)"
@@ -326,22 +341,32 @@ profile_target() {
         return 1
     fi
 
+    # Verify Scheduler TID vs PID
+    echo "Server PIDs & Thread Hierarchy:"
+    ps -T -p "$CURRENT_SRV_PID" || true
+
     prime_server "$PORT_PERF"
 
-    echo "Attaching process-wide Linux perf (-p $CURRENT_SRV_PID, 499Hz DWARF)..."
-    perf record \
-      -p "$CURRENT_SRV_PID" \
-      -F 499 \
-      --call-graph dwarf,4096 \
-      -o "$PERF_DATA" &
-    PERF_REC_PID=$!
+    PERF_REC_PID=""
+    PERF_STAT_PID=""
+    if command -v perf &>/dev/null; then
+        echo "Attaching process-wide Linux perf (-p $CURRENT_SRV_PID, 499Hz DWARF)..."
+        perf record \
+          -p "$CURRENT_SRV_PID" \
+          -F 499 \
+          --call-graph dwarf,4096 \
+          -o "$PERF_DATA" &
+        PERF_REC_PID=$!
 
-    echo "Attaching process-wide perf stat for context switches & migrations..."
-    perf stat \
-      -p "$CURRENT_SRV_PID" \
-      -e task-clock,context-switches,cpu-migrations,page-faults,cycles,instructions \
-      -o "$STAT_OUT" &
-    PERF_STAT_PID=$!
+        echo "Attaching process-wide perf stat for context switches & migrations..."
+        perf stat \
+          -p "$CURRENT_SRV_PID" \
+          -e task-clock,context-switches,cpu-migrations,page-faults,cycles,instructions \
+          -o "$STAT_OUT" &
+        PERF_STAT_PID=$!
+    else
+        echo "WARNING: perf command not found in PATH on this compute node. Skipping PMU capture."
+    fi
 
     sleep 0.5
 
@@ -354,6 +379,7 @@ profile_target() {
       --max-tokens 64 \
       --json-out "$JSON_PERF"
 
+    # Stop collectors
     kill -INT "$PERF_REC_PID" 2>/dev/null || true
     wait "$PERF_REC_PID" 2>/dev/null || true
 
@@ -363,6 +389,7 @@ profile_target() {
     kill_current_server
     sleep 1
 
+    # Generate Reports
     if [ -f "$STAT_OUT" ]; then
         echo "--------------------------------------------------------------------------------"
         echo " [$label] Process-Wide Hardware Counters & Context Switches"
@@ -372,7 +399,7 @@ profile_target() {
 
     if [ -f "$PERF_DATA" ]; then
         echo "--------------------------------------------------------------------------------"
-        echo " [$label] Perf Breakdown sorted by DSO and Symbol"
+        echo " [$label] Perf Breakdown sorted by DSO and Symbol (Distinguishing libcuda vs CPU)"
         echo "--------------------------------------------------------------------------------"
         REPORT_DSO="./profiles/perf_dso_sym_${label}_${JOB_ID}.txt"
         perf report \
@@ -381,15 +408,32 @@ profile_target() {
           --sort dso,sym \
           --percent-limit 0.5 > "$REPORT_DSO" || true
         head -n 45 "$REPORT_DSO" || true
+
+        echo "--------------------------------------------------------------------------------"
+        echo " [$label] Perf Breakdown sorted by Thread (Scheduler vs HTTP Workers)"
+        echo "--------------------------------------------------------------------------------"
+        REPORT_COMM="./profiles/perf_comm_tid_${label}_${JOB_ID}.txt"
+        perf report \
+          -i "$PERF_DATA" \
+          --stdio \
+          --sort comm,tid,dso,sym \
+          --percent-limit 0.5 > "$REPORT_COMM" || true
+        head -n 45 "$REPORT_COMM" || true
     fi
 }
 
+# ==============================================================================
+# Execute Profiling Across Both Architectures
+# ==============================================================================
 profile_target "phase2" "./build-phase2/bin/llama-server"
 
 if [ -f "./build-master/bin/llama-server" ]; then
     profile_target "master" "./build-master/bin/llama-server"
 fi
 
+# ==============================================================================
+# Final Comparative Summary: Observer Overhead & Context Switches per Token
+# ==============================================================================
 echo "================================================================================"
 echo " FINAL SYSTEMS COMPARISON MATRIX"
 echo "================================================================================"
@@ -439,3 +483,9 @@ for target in ["master", "phase2"]:
     if s["base_tok_s"] > 0:
         overhead = ((s["base_tok_s"] - s["perf_tok_s"]) / s["base_tok_s"]) * 100.0 if s["base_tok_s"] > 0 else 0.0
         print(f"{s['label']:<10} | {s['base_tok_s']:<18.2f} | {s['perf_tok_s']:<16.2f} | {overhead:<17.1f}% | {s['cs_per_tok']:<20.2f}")
+
+EOF
+
+echo "================================================================================"
+echo " Profiling Job Complete! All reports and raw profiles stored in ./profiles/"
+echo "================================================================================"

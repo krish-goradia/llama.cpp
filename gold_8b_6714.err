@@ -1,0 +1,3 @@
+CMAKE_BUILD_TYPE=Release
+CMAKE_BUILD_TYPE=Release
+./bench_gold.sh: line 435: syntax error near unexpected token `('

@@ -33,6 +33,7 @@ CUSTOM_CANCEL=0.0
 CUSTOM_DURATION=0.0
 CUSTOM_RATE=0.0
 REVERSE=false
+AA_MODE=false
 
 # ANSI Colors
 BOLD="\033[1m"
@@ -92,6 +93,14 @@ while [[ $# -gt 0 ]]; do
     --reverse)
       REVERSE=true
       shift
+      ;;
+    --aa|--aa-test)
+      AA_MODE=true
+      shift
+      ;;
+    --threads-http)
+      THREADS_HTTP="$2"
+      shift 2
       ;;
     --target-temp)
       TARGET_TEMP="$2"
@@ -166,23 +175,37 @@ run_gold_case() {
     SCALE_DESC="Sustained ${DURATION}s Duration"
   fi
 
+  local TARGET_DIR="$DIR_CURRENT"
+  local TARGET_LABEL="Phase-2 Lock-Free"
+  if [ "$AA_MODE" = true ]; then
+    TARGET_DIR="$DIR_MASTER"
+    TARGET_LABEL="Master Baseline (Instance B)"
+  fi
+
   echo -e "\n${BOLD}${CYAN}================================================================================${RESET}"
   echo -e "${BOLD}${CYAN} GOLD-STANDARD TRIAL: ${MODE_DESC} | ${SCALE_DESC} | ${CANCEL_PCT}% Cancel | ${TRIALS} Trials${RESET}"
-  if [ "$REVERSE" = true ]; then
+  if [ "$AA_MODE" = true ]; then
+    echo -e "${BOLD}${YELLOW} [Execution Mode: A/A EMPIRICAL NOISE FLOOR (Master vs Master)]${RESET}"
+  elif [ "$REVERSE" = true ]; then
     echo -e "${BOLD}${YELLOW} [Execution Mode: REAL REVERSE ORDER (Phase-2 First on Odd Trials)]${RESET}"
   else
     echo -e "${BOLD}${CYAN} [Execution Mode: Standard Interleaved ABBA Order (Master First on Odd Trials)]${RESET}"
   fi
   echo -e "${BOLD}${CYAN}================================================================================${RESET}\n"
 
+  EXTRA_HTTP_ARGS=""
+  if [ -n "$THREADS_HTTP" ]; then
+    EXTRA_HTTP_ARGS="--threads-http $THREADS_HTTP"
+  fi
+
   for trial in $(seq 1 "$TRIALS"); do
-    echo -e "${BOLD}--- Trial ${trial}/${TRIALS} ---${RESET}"
+    echo -e "${BOLD}--- Trial ${trial}/${TRIALS} (Seed: ${trial}) ---${RESET}"
     local MASTER_JSON="$TMP_DIR/master_t${trial}.json"
     local CURRENT_JSON="$TMP_DIR/current_t${trial}.json"
 
     # Execution order:
-    # Standard: Odd trials = Master FIRST; Even trials = Phase-2 FIRST
-    # Reverse (--reverse): Odd trials = Phase-2 FIRST; Even trials = Master FIRST
+    # Standard: Odd trials = Master FIRST; Even trials = Target SECOND
+    # Reverse (--reverse): Odd trials = Target FIRST; Even trials = Master FIRST
     local RUN_CURRENT_FIRST=false
     if [ "$REVERSE" = true ]; then
       if [ $((trial % 2)) -eq 1 ]; then
@@ -195,42 +218,42 @@ run_gold_case() {
     fi
 
     if [ "$RUN_CURRENT_FIRST" = false ]; then
-      echo -e "  [Order: Master Baseline FIRST -> Phase-2 Lock-Free SECOND]"
+      echo -e "  [Order: Master Baseline (Instance A) FIRST -> ${TARGET_LABEL} SECOND]"
       
-      # 1. Master Baseline
+      # 1. Master Baseline (Instance A)
       pkill -9 -f "llama-server" 2>/dev/null || true
       wait_for_gpu_cooldown "$TARGET_TEMP" "$TARGET_POWER" 30
       sync
       cd "$DIR_MASTER"
-      ./run_bench.sh -c "$CLIENTS" -n "$REQS" -d "$DURATION" -r "$RATE" --cancel "$CANCEL" -s "$SLOTS" -p "$PORT" -m "$MODEL_PATH" --ctx "$CTX" --max-tokens "$MAX_TOKENS" --json-out "$MASTER_JSON" --no-build || true
+      ./run_bench.sh -c "$CLIENTS" -n "$REQS" -d "$DURATION" -r "$RATE" --cancel "$CANCEL" -s "$SLOTS" -p "$PORT" -m "$MODEL_PATH" --ctx "$CTX" --max-tokens "$MAX_TOKENS" --seed "$trial" $EXTRA_HTTP_ARGS --json-out "$MASTER_JSON" --no-build || true
 
-      # 2. Phase-2 Lock-Free
+      # 2. Target System (Phase-2 or Master Instance B)
       pkill -9 -f "llama-server" 2>/dev/null || true
       wait_for_gpu_cooldown "$TARGET_TEMP" "$TARGET_POWER" 30
       sync
-      cd "$DIR_CURRENT"
-      ./run_bench.sh -c "$CLIENTS" -n "$REQS" -d "$DURATION" -r "$RATE" --cancel "$CANCEL" -s "$SLOTS" -p "$PORT" -m "$MODEL_PATH" --ctx "$CTX" --max-tokens "$MAX_TOKENS" --json-out "$CURRENT_JSON" --no-build || true
+      cd "$TARGET_DIR"
+      ./run_bench.sh -c "$CLIENTS" -n "$REQS" -d "$DURATION" -r "$RATE" --cancel "$CANCEL" -s "$SLOTS" -p "$PORT" -m "$MODEL_PATH" --ctx "$CTX" --max-tokens "$MAX_TOKENS" --seed "$trial" $EXTRA_HTTP_ARGS --json-out "$CURRENT_JSON" --no-build || true
     else
-      echo -e "  [Order: Phase-2 Lock-Free FIRST -> Master Baseline SECOND]"
+      echo -e "  [Order: ${TARGET_LABEL} FIRST -> Master Baseline (Instance A) SECOND]"
       
-      # 1. Phase-2 Lock-Free
+      # 1. Target System (Phase-2 or Master Instance B)
       pkill -9 -f "llama-server" 2>/dev/null || true
       wait_for_gpu_cooldown "$TARGET_TEMP" "$TARGET_POWER" 30
       sync
-      cd "$DIR_CURRENT"
-      ./run_bench.sh -c "$CLIENTS" -n "$REQS" -d "$DURATION" -r "$RATE" --cancel "$CANCEL" -s "$SLOTS" -p "$PORT" -m "$MODEL_PATH" --ctx "$CTX" --max-tokens "$MAX_TOKENS" --json-out "$CURRENT_JSON" --no-build || true
+      cd "$TARGET_DIR"
+      ./run_bench.sh -c "$CLIENTS" -n "$REQS" -d "$DURATION" -r "$RATE" --cancel "$CANCEL" -s "$SLOTS" -p "$PORT" -m "$MODEL_PATH" --ctx "$CTX" --max-tokens "$MAX_TOKENS" --seed "$trial" $EXTRA_HTTP_ARGS --json-out "$CURRENT_JSON" --no-build || true
 
-      # 2. Master Baseline
+      # 2. Master Baseline (Instance A)
       pkill -9 -f "llama-server" 2>/dev/null || true
       wait_for_gpu_cooldown "$TARGET_TEMP" "$TARGET_POWER" 30
       sync
       cd "$DIR_MASTER"
-      ./run_bench.sh -c "$CLIENTS" -n "$REQS" -d "$DURATION" -r "$RATE" --cancel "$CANCEL" -s "$SLOTS" -p "$PORT" -m "$MODEL_PATH" --ctx "$CTX" --max-tokens "$MAX_TOKENS" --json-out "$MASTER_JSON" --no-build || true
+      ./run_bench.sh -c "$CLIENTS" -n "$REQS" -d "$DURATION" -r "$RATE" --cancel "$CANCEL" -s "$SLOTS" -p "$PORT" -m "$MODEL_PATH" --ctx "$CTX" --max-tokens "$MAX_TOKENS" --seed "$trial" $EXTRA_HTTP_ARGS --json-out "$MASTER_JSON" --no-build || true
     fi
   done
 
   # Statistical Multi-Trial Aggregator with Paired Hypothesis Testing & 95% Confidence Intervals
-  TMP_DIR="$TMP_DIR" CLIENTS="$CLIENTS" REQS="$REQS" SLOTS="$SLOTS" CANCEL="$CANCEL" TRIALS="$TRIALS" DURATION="$DURATION" RATE="$RATE" REVERSE="$REVERSE" python3 - <<'PYCODE'
+  TMP_DIR="$TMP_DIR" CLIENTS="$CLIENTS" REQS="$REQS" SLOTS="$SLOTS" CANCEL="$CANCEL" TRIALS="$TRIALS" DURATION="$DURATION" RATE="$RATE" REVERSE="$REVERSE" AA_MODE="$AA_MODE" python3 - <<'PYCODE'
 import json
 import glob
 import math
@@ -322,7 +345,18 @@ n_valid = len(valid_pairs)
 print('=' * 120)
 print(f'          SYSTEMS GOLD-STANDARD STATISTICAL REPORT (Paired Tests & 95% Confidence Intervals)')
 print('=' * 120)
-order_note = "REAL REVERSE ORDER (Phase-2 First on Odd)" if reverse_str.lower() == "true" else "Standard Interleaved ABBA"
+aa_str = os.environ.get("AA_MODE", "false")
+is_aa = aa_str.lower() == "true"
+
+if is_aa:
+    order_note = "A/A NOISE FLOOR PROTOCOL (Master-A vs Master-B)"
+    master_header = "MASTER-A (95% CI)"
+    target_header = "MASTER-B (95% CI)"
+else:
+    order_note = "REAL REVERSE ORDER (Phase-2 First on Odd)" if reverse_str.lower() == "true" else "Standard Interleaved ABBA"
+    master_header = "MASTER (95% CI)"
+    target_header = "LOCKFREE (95% CI)"
+
 workload_note = f"Open-Loop Poisson ({rate:.1f} req/s)" if rate > 0 else f"Closed-Loop ({clients} clients)"
 duration_note = f"Sustained {duration:.1f}s" if duration > 0 else f"{reqs} Requests"
 print(f' Workload : {workload_note} | {duration_note} | Slots: {slots} | Cancel: {cancel_pct}%')
@@ -338,7 +372,7 @@ if n_valid < 2:
     sys.exit(1)
 
 print('-' * 120)
-print(f' {"METRIC":<28} {"MASTER (95% CI)":<22} {"LOCKFREE (95% CI)":<22} {"PAIRED DELTA (95% CI)":<25} {"P-VALUE":<10} {"STATUS":<12}')
+print(f' {"METRIC":<28} {master_header:<22} {target_header:<22} {"PAIRED DELTA (95% CI)":<25} {"P-VALUE":<10} {"STATUS":<12}')
 print('-' * 120)
 
 df = n_valid - 1
@@ -368,19 +402,22 @@ def paired_stat_row(name, m_vals, c_vals, unit, invert=False):
     ci_low_pct = ((d_mean - d_ci) / m_mean * 100.0) if m_mean != 0 else 0.0
     ci_high_pct = ((d_mean + d_ci) / m_mean * 100.0) if m_mean != 0 else 0.0
 
-    # Strict Classifier Rules:
-    # Requires |delta| >= 3.0% AND statistically significant (p < 0.05).
-    # Anything under 3% or p >= 0.05 is classified as [PARITY / NOISE].
-    if abs(rel_delta) < 3.0 or p_val >= 0.05:
-        status = "[PARITY]"
+    # 4-Tier Standard Classifier Rules (EuroMLSys / Reviewer Standard):
+    # 1. EQUIVALENT: Entire 95% CI is bounded inside [-3.0%, +3.0%]
+    # 2. WIN: Statistically significant (p < 0.05), CI strictly excludes 0 in favorable direction
+    # 3. REGRESSION: Statistically significant (p < 0.05), CI strictly excludes 0 in unfavorable direction
+    # 4. INCONCLUSIVE: CI crosses 0 or extends beyond +-3.0% (variance too high)
+    if ci_low_pct >= -3.0 and ci_high_pct <= 3.0:
+        status = "[EQUIVALENT]"
+    elif p_val < 0.05 and ((not invert and ci_low_pct > 0.0) or (invert and ci_high_pct < 0.0)):
+        status = "[WIN]"
+    elif p_val < 0.05 and ((not invert and ci_high_pct < 0.0) or (invert and ci_low_pct > 0.0)):
+        status = "[REGRESSION]"
     else:
-        if invert:
-            status = "[IMPROVED]" if rel_delta < 0 else "[REGRESSION]"
-        else:
-            status = "[FASTER]" if rel_delta > 0 else "[SLOWER]"
+        status = "[INCONCLUSIVE]"
 
-    m_str = f"{m_mean:.2f} ± {m_ci:.2f} {unit}"
-    c_str = f"{c_mean:.2f} ± {c_ci:.2f} {unit}"
+    m_str = f"{m_mean:.2f} +/- {m_ci:.2f} {unit}"
+    c_str = f"{c_mean:.2f} +/- {c_ci:.2f} {unit}"
     sign = "+" if rel_delta > 0 else ""
     delta_str = f"{sign}{rel_delta:.2f}% [{ci_low_pct:+.1f}%, {ci_high_pct:+.1f}%]"
     p_str = f"p={p_val:.4f}" if p_val >= 0.0001 else "p<0.0001"
@@ -388,15 +425,17 @@ def paired_stat_row(name, m_vals, c_vals, unit, invert=False):
     print(f' {name:<28} {m_str:<22} {c_str:<22} {delta_str:<25} {p_str:<10} {status:<12}')
 
 paired_stat_row("Throughput", [m["tok_per_sec"] for m, c in valid_pairs], [c["tok_per_sec"] for m, c in valid_pairs], "tok/s", invert=False)
-paired_stat_row("Total Wall Time", [m["total_time_s"] for m, c in valid_pairs], [c["total_time_s"] for m, c in valid_pairs], "s", invert=True)
-paired_stat_row("TTFT Mean Latency", [m["ttft"]["mean"] for m, c in valid_pairs], [c["ttft"]["mean"] for m, c in valid_pairs], "ms", invert=True)
+paired_stat_row("Goodput", [m["successful"] / m["total_time_s"] if m["total_time_s"] > 0 else 0 for m, c in valid_pairs], [c["successful"] / c["total_time_s"] if c["total_time_s"] > 0 else 0 for m, c in valid_pairs], "req/s", invert=False)
+paired_stat_row("TTFT Median (p50)", [m["ttft"]["p50"] for m, c in valid_pairs], [c["ttft"]["p50"] for m, c in valid_pairs], "ms", invert=True)
 paired_stat_row("TTFT Worst-Tail (p99)", [m["ttft"]["p99"] for m, c in valid_pairs], [c["ttft"]["p99"] for m, c in valid_pairs], "ms", invert=True)
 paired_stat_row("ITL Tail Jitter (p95)", [m["itl"]["p95"] for m, c in valid_pairs], [c["itl"]["p95"] for m, c in valid_pairs], "ms", invert=True)
-paired_stat_row("ITL Worst-Tail Jitter (p99)", [m["itl"]["p99"] for m, c in valid_pairs], [c["itl"]["p99"] for m, c in valid_pairs], "ms", invert=True)
 
 print('=' * 120)
-print(' Note: Significance threshold is set at |Delta| >= 3.0% and p < 0.05.')
-print('       Deltas under 3.0% or with p >= 0.05 are strictly classified as [PARITY].\n')
+print(' Note: Classification standards (TOST 3.0% equivalence threshold):')
+print('       [WIN]          : p < 0.05 and 95% CI strictly excludes 0 in favorable direction.')
+print('       [REGRESSION]   : p < 0.05 and 95% CI strictly excludes 0 in unfavorable direction.')
+print('       [EQUIVALENT]   : 95% CI is fully bounded inside [-3.0%, +3.0%].')
+print('       [INCONCLUSIVE] : 95% CI crosses 0 or exceeds [-3.0%, +3.0%] boundary (unresolved).\n')
 PYCODE
 }
 
