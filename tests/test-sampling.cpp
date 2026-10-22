@@ -187,6 +187,39 @@ static void test_penalties(
     tester.check();
 }
 
+static void test_penalties_shuffled(
+    const std::vector<float> & probs, const std::vector<llama_token> & last_tokens,
+    const std::vector<float> & probs_expected, float repeat_penalty, float alpha_frequency, float alpha_presence
+) {
+    GGML_ASSERT(probs.size() == probs_expected.size());
+
+    // initialize candidates in reverse order to force cur_p->data[i].id != i
+    std::vector<llama_token_data> cur;
+    for (int i = (int) probs.size() - 1; i >= 0; --i) {
+        cur.push_back({ (llama_token) i, logf(probs[i]), 0.0f });
+    }
+
+    auto * sampler = llama_sampler_init_penalties((int32_t) probs.size(), (int32_t) last_tokens.size(), repeat_penalty, alpha_frequency, alpha_presence);
+
+    for (size_t i = 0; i < last_tokens.size(); i++) {
+        llama_sampler_accept(sampler, last_tokens[i]);
+    }
+
+    llama_token_data_array cur_p = { cur.data(), cur.size(), -1, false };
+    llama_sampler_apply(sampler, &cur_p);
+
+    auto * dist = llama_sampler_init_dist(0);
+    llama_sampler_apply(dist, &cur_p);
+    llama_sampler_free(dist);
+    llama_sampler_free(sampler);
+
+    for (size_t i = 0; i < cur_p.size; ++i) {
+        llama_token id = cur_p.data[i].id;
+        GGML_ASSERT(id >= 0 && (size_t) id < probs_expected.size());
+        GGML_ASSERT(fabs(cur_p.data[i].p - probs_expected[id]) < 1e-5);
+    }
+}
+
 static void test_dry(
     const std::vector<float> & probs, const std::vector<llama_token> & last_tokens,
     const std::vector<float> & expected_probs, float dry_multiplier, float dry_base,
@@ -383,6 +416,13 @@ int main(void) {
     test_penalties({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0},             {0.000011f, 0.249997f, 0.249997f, 0.249997f, 0.249997f}, 1.0f, 5.0f, 5.0f);
     test_penalties({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2},       {0.000023f, 0.000023f, 0.000023f, 0.499966f, 0.499966f}, 1.0f, 5.0f, 5.0f);
     test_penalties({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2, 0, 0}, {0.000000f, 0.000023f, 0.000023f, 0.499977f, 0.499977f}, 1.0f, 5.0f, 5.0f);
+
+    test_penalties_shuffled({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0}, {0, 0.25f, 0.25f, 0.25f, 0.25f},   50.0f, 0.0f, 0.0f);
+    test_penalties_shuffled({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2}, {0, 0, 0, 0.5f, 0.5f},       50.0f, 0.0f, 0.0f);
+    test_penalties_shuffled({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2, 0, 0}, {0, 0, 0, 0.5f, 0.5f}, 50.0f, 0.0f, 0.0f);
+    test_penalties_shuffled({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0},             {0.000011f, 0.249997f, 0.249997f, 0.249997f, 0.249997f}, 1.0f, 5.0f, 5.0f);
+    test_penalties_shuffled({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2},       {0.000023f, 0.000023f, 0.000023f, 0.499966f, 0.499966f}, 1.0f, 5.0f, 5.0f);
+    test_penalties_shuffled({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2, 0, 0}, {0.000000f, 0.000023f, 0.000023f, 0.499977f, 0.499977f}, 1.0f, 5.0f, 5.0f);
 
 
     test_dry({0.25f, 0.25f, 0.25f, 0.25f}, {0, 1}, {0.25f, 0.25f, 0.25f, 0.25f}, 1.0f, 1.1f, 2, 4, {});

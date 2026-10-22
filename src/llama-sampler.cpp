@@ -2950,30 +2950,43 @@ static void llama_sampler_penalties_accept(struct llama_sampler * smpl, llama_to
 static void llama_sampler_penalties_apply(struct llama_sampler * smpl, llama_token_data_array * cur_p) {
     auto * ctx = (llama_sampler_penalties *) smpl->ctx;
 
-    if (ctx->is_disabled()) {
+    if (ctx->is_disabled() || ctx->token_count.empty()) {
         return;
     }
 
-    // Apply frequency and presence penalties to the cur_p
-    for (size_t i = 0; i < cur_p->size; ++i) {
-        const auto token_iter = ctx->token_count.find(cur_p->data[i].id);
-        if (token_iter == ctx->token_count.end()) {
-            continue;
-        }
-
-        const int count = token_iter->second;
-
-        assert(count > 0 && count <= ctx->penalty_last_n);
-
-        // The academic publication that described this technique actually just only divided, but that would cause tokens with negative logits to become more likely, which is obviously wrong.
-        // This is common fix for this problem, which is to multiply by the penalty instead of dividing.
-        if (cur_p->data[i].logit <= 0) {
-            cur_p->data[i].logit *= ctx->penalty_repeat;
+    auto apply_penalty = [&](llama_token_data & data, int count) {
+        if (data.logit <= 0) {
+            data.logit *= ctx->penalty_repeat;
         } else {
-            cur_p->data[i].logit /= ctx->penalty_repeat;
+            data.logit /= ctx->penalty_repeat;
         }
 
-        cur_p->data[i].logit -= float(count) * ctx->penalty_freq + float(count > 0) * ctx->penalty_present;
+        data.logit -= float(count) * ctx->penalty_freq + float(count > 0) * ctx->penalty_present;
+    };
+
+    // check if candidates are un-shuffled (direct index matches token id)
+    bool can_fast_path = true;
+    for (const auto & it : ctx->token_count) {
+        const llama_token token = it.first;
+        if (token < 0 || (size_t) token >= cur_p->size || cur_p->data[token].id != token) {
+            can_fast_path = false;
+            break;
+        }
+    }
+
+    if (can_fast_path) {
+        // fast path: update candidates directly in O(N_penalized)
+        for (const auto & it : ctx->token_count) {
+            apply_penalty(cur_p->data[it.first], it.second);
+        }
+    } else {
+        // fallback for shuffled candidates: single pass over candidates with map lookup (O(V), matching legacy master)
+        for (size_t i = 0; i < cur_p->size; ++i) {
+            const auto it = ctx->token_count.find(cur_p->data[i].id);
+            if (it != ctx->token_count.end()) {
+                apply_penalty(cur_p->data[i], it->second);
+            }
+        }
     }
 
     cur_p->sorted = false;
@@ -3552,6 +3565,10 @@ static void llama_sampler_dry_apply(struct llama_sampler * smpl, llama_token_dat
     }
 
     // Step 4: Apply logit penalties based on the maximum repeat length for relevant tokens.
+    if (ctx->dry_max_token_repeat.empty()) {
+        cur_p->sorted = false;
+        return;
+    }
 
     // Prevent floating point overflow in `pow(penalty_base, exponent)` by clamping to `max_exponent`.
     // Compute it from `penalty_base` and the approximate log of `std::numeric_limits<float>::max()`
@@ -3561,28 +3578,50 @@ static void llama_sampler_dry_apply(struct llama_sampler * smpl, llama_token_dat
         max_exponent = FLOAT_MAX_LOG / std::log(ctx->dry_base);
     }
 
-    for (size_t i = 0; i < cur_p->size; ++i) {
-        const auto& af_kvp = ctx->dry_max_token_repeat.find(cur_p->data[i].id);
-        if (af_kvp != ctx->dry_max_token_repeat.end()) {
-            // Check all sequence breakers starting with this token
-            auto range = ctx->dry_processed_breakers.equal_range(cur_p->data[i].id);
-            bool is_single_token_breaker = false;
+    auto apply_dry_penalty = [&](llama_token_data & data, int repeat_len) {
+        // Check all sequence breakers starting with this token
+        auto range = ctx->dry_processed_breakers.equal_range(data.id);
+        bool is_single_token_breaker = false;
 
-            for (auto it = range.first; it != range.second; ++it) {
-                if (it->second.empty()) {
-                    is_single_token_breaker = true;
-                    break;
-                }
+        for (auto it = range.first; it != range.second; ++it) {
+            if (it->second.empty()) {
+                is_single_token_breaker = true;
+                break;
             }
+        }
 
-            // Apply penalty only if it's not a single-token sequence breaker
-            if (!is_single_token_breaker) {
-                int repeat_exp = af_kvp->second - ctx->dry_allowed_length;
-                if (max_exponent > 0 && repeat_exp > max_exponent) {
-                    repeat_exp = max_exponent;
-                }
-                float penalty = ctx->dry_multiplier * std::pow(ctx->dry_base, repeat_exp);
-                cur_p->data[i].logit -= penalty;
+        // Apply penalty only if it's not a single-token sequence breaker
+        if (!is_single_token_breaker) {
+            int repeat_exp = repeat_len - ctx->dry_allowed_length;
+            if (max_exponent > 0 && repeat_exp > max_exponent) {
+                repeat_exp = max_exponent;
+            }
+            float penalty = ctx->dry_multiplier * std::pow(ctx->dry_base, repeat_exp);
+            data.logit -= penalty;
+        }
+    };
+
+    // check if candidates are un-shuffled (direct index matches token id)
+    bool can_fast_path = true;
+    for (const auto & af_kvp : ctx->dry_max_token_repeat) {
+        const llama_token token = af_kvp.first;
+        if (token < 0 || (size_t) token >= cur_p->size || cur_p->data[token].id != token) {
+            can_fast_path = false;
+            break;
+        }
+    }
+
+    if (can_fast_path) {
+        // fast path: update candidates directly in O(N_penalized)
+        for (const auto & af_kvp : ctx->dry_max_token_repeat) {
+            apply_dry_penalty(cur_p->data[af_kvp.first], af_kvp.second);
+        }
+    } else {
+        // fallback for shuffled candidates: single pass over candidates with map lookup (O(V), matching legacy master)
+        for (size_t i = 0; i < cur_p->size; ++i) {
+            const auto it = ctx->dry_max_token_repeat.find(cur_p->data[i].id);
+            if (it != ctx->dry_max_token_repeat.end()) {
+                apply_dry_penalty(cur_p->data[i], it->second);
             }
         }
     }

@@ -147,3 +147,72 @@ Consolidate compiler generated dependencies of target mtmd
 [ 95%] Built target mtmd
 Consolidate compiler generated dependencies of target server-context
 [ 97%] Built target server-context
+-- UI: download dist.tar.gz from b10529 failed: "HTTP response code said error"
+-- UI: downloading from latest: https://huggingface.co/buckets/ggml-org/llama-ui/resolve/latest/dist.tar.gz
+-- UI: archive verified and extracted
+-- UI: HF download succeeded, stamp updated (latest)
+-- UI: gzip compression applied (/home/krish.goradia/llama.cpp/build-master/tools/ui/dist/_gzip)
+embed: write output file /home/krish.goradia/llama.cpp/build-master/tools/ui/ui.cpp
+[ 97%] Built target llama-ui-assets
+Consolidate compiler generated dependencies of target llama-ui
+[ 97%] Building CXX object tools/ui/CMakeFiles/llama-ui.dir/ui.cpp.o
+[ 98%] Linking CXX static library libllama-ui.a
+[ 98%] Built target llama-ui
+Consolidate compiler generated dependencies of target llama-server-impl
+[ 98%] Linking CXX shared library ../../bin/libllama-server-impl.so
+[100%] Built target llama-server-impl
+Consolidate compiler generated dependencies of target llama-server
+[100%] Linking CXX executable ../../bin/llama-server
+[100%] Built target llama-server
+################################################################################
+ STARTING PROFILING PIPELINE: phase2 (./build-phase2/bin/llama-server)
+################################################################################
+--------------------------------------------------------------------------------
+ [phase2] Sub-Step A: Unprofiled Steady-State Baseline (512 Requests, 64 Clients)
+--------------------------------------------------------------------------------
+Waiting for GPU thermal and power quiescence... Ready (34C, 34W)
+Priming server with warmup request...
+Running unprofiled benchmark: 64 clients, 512 requests...
+==================================================================
+           llama.cpp Systems Gold-Standard Benchmark              
+==================================================================
+ Target URL     : http://localhost:20709
+ Workload Mode  : Closed-Loop (64 concurrent clients)
+ Duration/Scale : 512 Requests
+ Max Tokens     : 64
+ Cancel Rate    : 0.0%
+ Warmup Requests: 2 (discarded)
+------------------------------------------------------------------
+ [Warmup] Sending 2 discarded request(s) to prime CUDA context...
+ [Warmup] Complete. Starting timed benchmark.
+
+-------------------------- SUMMARY RESULTS --------------------------
+ Total Time Elapsed   : 20.33 s
+ Requests Succeeded   : 512 / 512
+ Requests Cancelled   : 0 / 512
+ Requests Failed      : 0 / 512
+ Total Tokens Emitted : 33792
+ Aggregate Throughput : 1662.36 tokens/sec
+ GPU Telemetry        : Start 36.0C (94.16W) -> End 44.0C (187.97W)
+---------------------------------------------------------------------
+
+### 1. TTFT (Time To First Token in ms)
+  Mean: 1820.93 (±396.02) | p50: 1932.87 | p95: 1967.86 | p99: 1999.78 | Max: 2015.88
+
+### 2. ITL (Inter-Token Latency in ms)
+  Mean: 9.16 (±3.84) | p50: 8.83 | p95: 10.35 | p99: 29.84 | Max: 53.57
+
+### 3. Request Duration (in ms)
+  Mean: 2416.37 (±393.30) | p50: 2527.82 | p95: 2562.62 | p99: 2587.87
+=====================================================================
+
+Stopping server process (PID: 237872)...
+--------------------------------------------------------------------------------
+ [phase2] Sub-Step B: NVIDIA Nsight Systems (CUDA + NVTX Steady-State Capture)
+--------------------------------------------------------------------------------
+Waiting for GPU thermal and power quiescence... Ready (39C, 50W)
+Launching ./build-phase2/bin/llama-server with nsys launch (paused profiling)...
+ERROR: Server failed to start under nsys for phase2!
+ERROR: The --sample switch is not supported by the launch command after NVIDIA Nsight Systems v2021.5.
+The sample switch can be set on the profile and start commands.
+Stopping wrapper process (PID: 238146)...
