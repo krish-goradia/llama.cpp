@@ -1,0 +1,34 @@
+CMAKE_BUILD_TYPE=Release
+In file included from /home/krish.goradia/llama.cpp/tools/server/server-common.h:4,
+                 from /home/krish.goradia/llama.cpp/tools/server/server-task.h:14,
+                 from /home/krish.goradia/llama.cpp/tools/server/server-queue.cpp:1:
+/home/krish.goradia/llama.cpp/tools/server/server-queue.cpp: In member function ‘void server_queue::start_loop(int64_t)’:
+/home/krish.goradia/llama.cpp/common/./log.h:107:67: error: expected primary-expression before ‘)’ token
+  107 |             common_log_add(common_log_main(), (level), __VA_ARGS__); \
+      |                                                                   ^
+/home/krish.goradia/llama.cpp/common/./log.h:116:22: note: in expansion of macro ‘LOG_TMPL’
+  116 | #define LOG_INF(...) LOG_TMPL(GGML_LOG_LEVEL_INFO,  LOG_LEVEL_INFO,   __VA_ARGS__)
+      |                      ^~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-queue.cpp:10:27: note: in expansion of macro ‘LOG_INF’
+   10 | #define QUE_INF(fmt, ...) LOG_INF("que  %12.*s: " fmt, 12, __func__, __VA_ARGS__)
+      |                           ^~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-queue.cpp:357:5: note: in expansion of macro ‘QUE_INF’
+  357 |     QUE_INF("task queue ingress: Lock-free Vyukov MPSC node queue (LLAMA_SERVER_DISABLE_MPSC=OFF)\n");
+      |     ^~~~~~~
+/home/krish.goradia/llama.cpp/common/./log.h:107:67: error: expected primary-expression before ‘)’ token
+  107 |             common_log_add(common_log_main(), (level), __VA_ARGS__); \
+      |                                                                   ^
+/home/krish.goradia/llama.cpp/common/./log.h:116:22: note: in expansion of macro ‘LOG_TMPL’
+  116 | #define LOG_INF(...) LOG_TMPL(GGML_LOG_LEVEL_INFO,  LOG_LEVEL_INFO,   __VA_ARGS__)
+      |                      ^~~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-queue.cpp:10:27: note: in expansion of macro ‘LOG_INF’
+   10 | #define QUE_INF(fmt, ...) LOG_INF("que  %12.*s: " fmt, 12, __func__, __VA_ARGS__)
+      |                           ^~~~~~~
+/home/krish.goradia/llama.cpp/tools/server/server-queue.cpp:362:5: note: in expansion of macro ‘QUE_INF’
+  362 |     QUE_INF("response egress: Lock-free SPSC ring buffer channels (LLAMA_SERVER_DISABLE_SPSC=OFF)\n");
+      |     ^~~~~~~
+gmake[3]: *** [tools/server/CMakeFiles/server-context.dir/build.make:104: tools/server/CMakeFiles/server-context.dir/server-queue.cpp.o] Error 1
+gmake[2]: *** [CMakeFiles/Makefile2:2815: tools/server/CMakeFiles/server-context.dir/all] Error 2
+gmake[2]: *** Waiting for unfinished jobs....
+gmake[1]: *** [CMakeFiles/Makefile2:2753: tools/server/CMakeFiles/llama-server.dir/rule] Error 2
+gmake: *** [Makefile:845: llama-server] Error 2

@@ -1,0 +1,19 @@
+/usr/bin/which: no perf in (/apps/codes/cuda-12.8/lib64:/apps/codes/cuda-12.8/bin:/apps/compilers/gcc-13.1.0/lib64:LD_RUN_PATH:/apps/compilers/gcc-13.1.0/lib:/apps/compilers/gcc-13.1.0/bin:/usr/share/Modules/bin:/opt/confluent/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin)
+CMAKE_BUILD_TYPE=RelWithDebInfo
+In function ‘bool ggml_can_fuse(const ggml_cgraph*, int, const ggml_op*, int)’,
+    inlined from ‘bool ggml_can_fuse(const ggml_cgraph*, int, const ggml_op*, int)’ at /home/krish.goradia/llama.cpp/ggml/src/ggml-cuda/../ggml-impl.h:699:20,
+    inlined from ‘bool ggml_can_fuse(const ggml_cgraph*, int, std::initializer_list<ggml_op>)’ at /home/krish.goradia/llama.cpp/ggml/src/ggml-cuda/../ggml-impl.h:755:21,
+    inlined from ‘bool ggml_cuda_can_fuse(const ggml_cgraph*, int, std::initializer_list<ggml_op>, std::initializer_list<ggml_unary_op>)’ at /home/krish.goradia/llama.cpp/ggml/src/ggml-cuda/ggml-cuda.cu:3110:19:
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cuda/../ggml-impl.h:711:25: warning: ‘idxs’ may be used uninitialized [-Wmaybe-uninitialized]
+  711 |     return ggml_can_fuse_ext(cgraph, idxs, ops, num_ops);
+      |        ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cuda/../ggml-impl.h: In function ‘bool ggml_cuda_can_fuse(const ggml_cgraph*, int, std::initializer_list<ggml_op>, std::initializer_list<ggml_unary_op>)’:
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cuda/../ggml-impl.h:669:20: note: by argument 2 of type ‘const int*’ to ‘bool ggml_can_fuse_ext(const ggml_cgraph*, const int*, const ggml_op*, int)’ declared here
+  669 | static inline bool ggml_can_fuse_ext(const struct ggml_cgraph * cgraph, const int * node_idxs, const enum ggml_op * ops, int num_ops) {
+      |                    ^~~~~~~~~~~~~~~~~
+/home/krish.goradia/llama.cpp/ggml/src/ggml-cuda/../ggml-impl.h:706:5: note: ‘idxs’ declared here
+  706 |     int idxs[32];
+      |     ^~~~
+CMAKE_BUILD_TYPE=RelWithDebInfo
+/var/spool/slurm/slurmd/job06737/slurm_script: line 117: 1175298 Killed                  nsys profile --trace=cuda,nvtx --cuda-graph-trace=node --sample=cpu --delay=10 --stop-on-exit=true --output="$NSYS_OUT" --force-overwrite=true "$bin_path" -m "$MODEL_FILE" -c 16384 -np 16 --port "$PORT_NSYS" > "$LOG_NSYS" 2>&1
+/var/spool/slurm/slurmd/job06737/slurm_script: line 117: 1177285 Killed                  nsys profile --trace=cuda,nvtx --cuda-graph-trace=node --sample=cpu --delay=10 --stop-on-exit=true --output="$NSYS_OUT" --force-overwrite=true "$bin_path" -m "$MODEL_FILE" -c 16384 -np 16 --port "$PORT_NSYS" > "$LOG_NSYS" 2>&1

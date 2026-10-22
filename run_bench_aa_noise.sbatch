@@ -3,7 +3,7 @@
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=32
-#SBATCH --time=01:30:00
+#SBATCH --time=02:30:00
 #SBATCH --output=gold_bench_aa_%j.log
 #SBATCH --error=gold_bench_aa_%j.err
 
@@ -93,8 +93,12 @@ echo ">>> [3/4] A/A Test: Poisson 16.0 req/s, 96 Reqs, 8 Slots, 0% Cancel (10 Tr
 ./bench_gold.sh --aa -r 16.0 -n 96 -k 0.0 -s 8 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
 
 # Case 4: Headline Concurrency on 16 Slots (128 clients, 128 reqs, 0% cancel)
-echo ">>> [4/4] A/A Test: 128 Clients, 128 Reqs, 16 Slots, 0% Cancel (10 Trials)..."
+echo ">>> [4/5] A/A Test: 128 Clients, 128 Reqs, 16 Slots, 0% Cancel (10 Trials)..."
 ./bench_gold.sh --aa -c 128 -n 128 -k 0.0 -s 16 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
+
+# Case 5: Headline Concurrency on 16 Slots with Churn (128 clients, 128 reqs, 20% cancel)
+echo ">>> [5/5] A/A Test: 128 Clients, 128 Reqs, 16 Slots, 20% Cancel (10 Trials)..."
+./bench_gold.sh --aa -c 128 -n 128 -k 0.2 -s 16 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
 
 echo "================================================================================"
 echo " A/A Noise Floor Benchmark Complete!"

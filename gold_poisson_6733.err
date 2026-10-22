@@ -1,0 +1,7 @@
+CMAKE_BUILD_TYPE=Release
+CMAKE_BUILD_TYPE=Release
+CMake Warning at /home/krish.goradia/llama.cpp/llama.cpp-master/scripts/ui-assets.cmake:357 (message):
+  UI: provisioning failed; embedding stale assets from
+  /home/krish.goradia/llama.cpp/llama.cpp-master/build/tools/ui/dist
+
+

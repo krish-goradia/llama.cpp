@@ -3,7 +3,7 @@
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=32
-#SBATCH --time=01:30:00
+#SBATCH --time=02:30:00
 #SBATCH --output=gold_threads_http_%j.log
 #SBATCH --error=gold_threads_http_%j.err
 
@@ -99,17 +99,17 @@ echo "==========================================================================
 echo ">>> [1/4] Controlled Threads: --threads-http 16 (1 Thread per Core, 0% Cancel)..."
 ./bench_gold.sh -c 128 -n 128 -k 0.0 -s 16 --threads-http 16 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
 
-# Case 2: 18 HTTP Threads (slots + 2 formula, standard sizing)
-echo ">>> [2/4] Controlled Threads: --threads-http 18 (slots+2 formula, 0% Cancel)..."
-./bench_gold.sh -c 128 -n 128 -k 0.0 -s 16 --threads-http 18 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
+# Case 2: 24 HTTP Threads (1.5x Oversubscription)
+echo ">>> [2/4] Controlled Threads: --threads-http 24 (1.5x Oversubscription, 0% Cancel)..."
+./bench_gold.sh -c 128 -n 128 -k 0.0 -s 16 --threads-http 24 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
 
-# Case 3: 8 HTTP Threads (Undersubscribed, 8 threads on 16 cores)
-echo ">>> [3/4] Controlled Threads: --threads-http 8 (Undersubscribed, 0% Cancel)..."
-./bench_gold.sh -c 128 -n 128 -k 0.0 -s 16 --threads-http 8 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
+# Case 3: 31 HTTP Threads (Master Baseline Default: hardware_concurrency() - 1)
+echo ">>> [3/4] Controlled Threads: --threads-http 31 (Master Default, 0% Cancel)..."
+./bench_gold.sh -c 128 -n 128 -k 0.0 -s 16 --threads-http 31 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
 
-# Case 4: Exactly 16 HTTP Threads with 20% Cancellation Churn
-echo ">>> [4/4] Controlled Threads: --threads-http 16 with 20% Churn..."
-./bench_gold.sh -c 128 -n 128 -k 0.2 -s 16 --threads-http 16 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
+# Case 4: 48 HTTP Threads (3x Oversubscription, Severe Thread Pool Contention)
+echo ">>> [4/4] Controlled Threads: --threads-http 48 (3x Oversubscription, 0% Cancel)..."
+./bench_gold.sh -c 128 -n 128 -k 0.0 -s 16 --threads-http 48 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
 
 echo "================================================================================"
 echo " HTTP Thread Pool Sizing Sweep Finished Successfully!"

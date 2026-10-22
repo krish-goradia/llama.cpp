@@ -109,6 +109,8 @@ CURRENT_SRV_PID=""
 CURRENT_WRAPPER_PID=""
 
 kill_current_server() {
+    nsys shutdown 2>/dev/null || true
+    pkill -9 -f "nsys" 2>/dev/null || true
     if [ -n "$CURRENT_SRV_PID" ]; then
         echo "Stopping server process (PID: $CURRENT_SRV_PID)..."
         kill -INT "$CURRENT_SRV_PID" 2>/dev/null || true
@@ -127,6 +129,7 @@ kill_current_server() {
         wait "$CURRENT_WRAPPER_PID" 2>/dev/null || true
         CURRENT_WRAPPER_PID=""
     fi
+    nsys shutdown 2>/dev/null || true
 }
 
 wait_server_ready() {
@@ -224,48 +227,32 @@ profile_target() {
     LOG_NSYS="./profiles/server_${label}_nsys_${JOB_ID}.log"
     JSON_NSYS="./profiles/bench_${label}_nsys_${JOB_ID}.json"
 
-    # Check if nsys CLI supports launch / start session workflow
+    # Use standalone nsys profile with targeted delay to avoid daemon session state locks
     NSYS_MODE="profile_delay"
-    if nsys launch --help >/dev/null 2>&1; then
-        NSYS_MODE="launch_session"
-    fi
+    nsys shutdown 2>/dev/null || true
+    pkill -9 -f "nsys" 2>/dev/null || true
 
-    if [ "$NSYS_MODE" = "launch_session" ]; then
-        echo "Launching $bin_path with nsys launch (paused profiling)..."
-        nsys launch \
-          --trace=cuda,nvtx \
-          --cuda-graph-trace=node \
-          "$bin_path" \
-            -m "$MODEL_FILE" \
-            -c 16384 \
-            -np 16 \
-            --port "$PORT_NSYS" > "$LOG_NSYS" 2>&1 &
-        CURRENT_WRAPPER_PID=$!
-
-        # Resolve exact server child PID (anchoring binary name to avoid wrapper)
-        for t in {1..40}; do
-            CURRENT_SRV_PID=$(pgrep -P "$CURRENT_WRAPPER_PID" llama-server 2>/dev/null || pgrep -f "^${bin_path}.*--port ${PORT_NSYS}" 2>/dev/null | head -n 1 || echo "")
-            [ -n "$CURRENT_SRV_PID" ] && break
-            sleep 0.5
-        done
-    else
-        echo "Launching $bin_path with nsys profile (targeted delay)..."
-        nsys profile \
-          --trace=cuda,nvtx \
-          --cuda-graph-trace=node \
-          --sample=cpu \
-          --delay=10 \
-          --stop-on-exit=true \
-          --output="$NSYS_OUT" \
-          --force-overwrite=true \
-          "$bin_path" \
-            -m "$MODEL_FILE" \
-            -c 32768 \
-            -np 16 \
-            --port "$PORT_NSYS" > "$LOG_NSYS" 2>&1 &
-        CURRENT_WRAPPER_PID=$!
-        CURRENT_SRV_PID=$(pgrep -P "$CURRENT_WRAPPER_PID" llama-server 2>/dev/null || echo "$CURRENT_WRAPPER_PID")
-    fi
+    echo "Launching $bin_path with nsys profile (targeted delay)..."
+    nsys profile \
+      --trace=cuda,nvtx \
+      --cuda-graph-trace=node \
+      --sample=cpu \
+      --delay=10 \
+      --stop-on-exit=true \
+      --output="$NSYS_OUT" \
+      --force-overwrite=true \
+      "$bin_path" \
+        -m "$MODEL_FILE" \
+        -c 16384 \
+        -np 16 \
+        --port "$PORT_NSYS" > "$LOG_NSYS" 2>&1 &
+    CURRENT_WRAPPER_PID=$!
+    for t in {1..30}; do
+        CURRENT_SRV_PID=$(pgrep -P "$CURRENT_WRAPPER_PID" llama-server 2>/dev/null || pgrep -f "^${bin_path}.*--port ${PORT_NSYS}" 2>/dev/null | head -n 1 || echo "")
+        [ -n "$CURRENT_SRV_PID" ] && break
+        sleep 0.5
+    done
+    [ -z "$CURRENT_SRV_PID" ] && CURRENT_SRV_PID="$CURRENT_WRAPPER_PID"
 
     if ! wait_server_ready "$PORT_NSYS"; then
         echo "ERROR: Server failed to start under nsys for $label!"
