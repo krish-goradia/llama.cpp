@@ -34,6 +34,7 @@ CUSTOM_DURATION=0.0
 CUSTOM_RATE=0.0
 REVERSE=false
 AA_MODE=false
+BB_MODE=false
 
 # ANSI Colors
 BOLD="\033[1m"
@@ -96,6 +97,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --aa|--aa-test)
       AA_MODE=true
+      shift
+      ;;
+    --bb|--bb-test)
+      BB_MODE=true
       shift
       ;;
     --threads-http)
@@ -175,21 +180,32 @@ run_gold_case() {
     SCALE_DESC="Sustained ${DURATION}s Duration"
   fi
 
+  local BASE_DIR="$DIR_MASTER"
+  local BASE_LABEL="Master Baseline"
   local TARGET_DIR="$DIR_CURRENT"
   local TARGET_LABEL="Phase-2 Lock-Free"
   if [ "$AA_MODE" = true ]; then
+    BASE_DIR="$DIR_MASTER"
+    BASE_LABEL="Master Baseline (Instance A)"
     TARGET_DIR="$DIR_MASTER"
     TARGET_LABEL="Master Baseline (Instance B)"
+  elif [ "$BB_MODE" = true ]; then
+    BASE_DIR="$DIR_CURRENT"
+    BASE_LABEL="Phase-2 Lock-Free (Instance A)"
+    TARGET_DIR="$DIR_CURRENT"
+    TARGET_LABEL="Phase-2 Lock-Free (Instance B)"
   fi
 
   echo -e "\n${BOLD}${CYAN}================================================================================${RESET}"
   echo -e "${BOLD}${CYAN} GOLD-STANDARD TRIAL: ${MODE_DESC} | ${SCALE_DESC} | ${CANCEL_PCT}% Cancel | ${TRIALS} Trials${RESET}"
   if [ "$AA_MODE" = true ]; then
     echo -e "${BOLD}${YELLOW} [Execution Mode: A/A EMPIRICAL NOISE FLOOR (Master vs Master)]${RESET}"
+  elif [ "$BB_MODE" = true ]; then
+    echo -e "${BOLD}${YELLOW} [Execution Mode: B/B EMPIRICAL NOISE FLOOR (Lock-Free vs Lock-Free)]${RESET}"
   elif [ "$REVERSE" = true ]; then
     echo -e "${BOLD}${YELLOW} [Execution Mode: REAL REVERSE ORDER (Phase-2 First on Odd Trials)]${RESET}"
   else
-    echo -e "${BOLD}${CYAN} [Execution Mode: Standard Interleaved ABBA Order (Master First on Odd Trials)]${RESET}"
+    echo -e "${BOLD}${CYAN} [Execution Mode: Alternating AB/BA Crossover Design (Master First on Odd Trials)]${RESET}"
   fi
   echo -e "${BOLD}${CYAN}================================================================================${RESET}\n"
 
@@ -218,13 +234,13 @@ run_gold_case() {
     fi
 
     if [ "$RUN_CURRENT_FIRST" = false ]; then
-      echo -e "  [Order: Master Baseline (Instance A) FIRST -> ${TARGET_LABEL} SECOND]"
+      echo -e "  [Order: ${BASE_LABEL} FIRST -> ${TARGET_LABEL} SECOND]"
       
-      # 1. Master Baseline (Instance A)
+      # 1. Base System (Instance A)
       pkill -9 -f "llama-server" 2>/dev/null || true
       wait_for_gpu_cooldown "$TARGET_TEMP" "$TARGET_POWER" 30
       sync
-      cd "$DIR_MASTER"
+      cd "$BASE_DIR"
       ./run_bench.sh -c "$CLIENTS" -n "$REQS" -d "$DURATION" -r "$RATE" --cancel "$CANCEL" -s "$SLOTS" -p "$PORT" -m "$MODEL_PATH" --ctx "$CTX" --max-tokens "$MAX_TOKENS" --seed "$trial" $EXTRA_HTTP_ARGS --json-out "$MASTER_JSON" --no-build || true
 
       # 2. Target System (Phase-2 or Master Instance B)
@@ -234,7 +250,7 @@ run_gold_case() {
       cd "$TARGET_DIR"
       ./run_bench.sh -c "$CLIENTS" -n "$REQS" -d "$DURATION" -r "$RATE" --cancel "$CANCEL" -s "$SLOTS" -p "$PORT" -m "$MODEL_PATH" --ctx "$CTX" --max-tokens "$MAX_TOKENS" --seed "$trial" $EXTRA_HTTP_ARGS --json-out "$CURRENT_JSON" --no-build || true
     else
-      echo -e "  [Order: ${TARGET_LABEL} FIRST -> Master Baseline (Instance A) SECOND]"
+      echo -e "  [Order: ${TARGET_LABEL} FIRST -> ${BASE_LABEL} SECOND]"
       
       # 1. Target System (Phase-2 or Master Instance B)
       pkill -9 -f "llama-server" 2>/dev/null || true
@@ -243,17 +259,17 @@ run_gold_case() {
       cd "$TARGET_DIR"
       ./run_bench.sh -c "$CLIENTS" -n "$REQS" -d "$DURATION" -r "$RATE" --cancel "$CANCEL" -s "$SLOTS" -p "$PORT" -m "$MODEL_PATH" --ctx "$CTX" --max-tokens "$MAX_TOKENS" --seed "$trial" $EXTRA_HTTP_ARGS --json-out "$CURRENT_JSON" --no-build || true
 
-      # 2. Master Baseline (Instance A)
+      # 2. Base System (Instance A)
       pkill -9 -f "llama-server" 2>/dev/null || true
       wait_for_gpu_cooldown "$TARGET_TEMP" "$TARGET_POWER" 30
       sync
-      cd "$DIR_MASTER"
+      cd "$BASE_DIR"
       ./run_bench.sh -c "$CLIENTS" -n "$REQS" -d "$DURATION" -r "$RATE" --cancel "$CANCEL" -s "$SLOTS" -p "$PORT" -m "$MODEL_PATH" --ctx "$CTX" --max-tokens "$MAX_TOKENS" --seed "$trial" $EXTRA_HTTP_ARGS --json-out "$MASTER_JSON" --no-build || true
     fi
   done
 
   # Statistical Multi-Trial Aggregator with Paired Hypothesis Testing & 95% Confidence Intervals
-  TMP_DIR="$TMP_DIR" CLIENTS="$CLIENTS" REQS="$REQS" SLOTS="$SLOTS" CANCEL="$CANCEL" TRIALS="$TRIALS" DURATION="$DURATION" RATE="$RATE" REVERSE="$REVERSE" AA_MODE="$AA_MODE" python3 - <<'PYCODE'
+  TMP_DIR="$TMP_DIR" CLIENTS="$CLIENTS" REQS="$REQS" SLOTS="$SLOTS" CANCEL="$CANCEL" TRIALS="$TRIALS" DURATION="$DURATION" RATE="$RATE" REVERSE="$REVERSE" AA_MODE="$AA_MODE" BB_MODE="$BB_MODE" python3 - <<'PYCODE'
 import json
 import glob
 import math
@@ -287,31 +303,21 @@ def get_tcrit(df):
         if k >= df: return T_CRIT_95[k]
     return 2.0
 
-def incbeta(a, b, x):
-    if x <= 0.0: return 0.0
-    if x >= 1.0: return 1.0
-    if x > (a + 1.0) / (a + b + 2.0):
-        return 1.0 - incbeta(b, a, 1.0 - x)
-    lbeta = math.lgamma(a) + math.lgamma(b) - math.lgamma(a + b)
-    front = math.exp(a * math.log(x) + b * math.log(1.0 - x) - lbeta) / a
-    f = 1.0; c = 1.0; d = 0.0
-    for m in range(1, 200):
-        num = m * (b - m) * x / ((a + 2*m - 1) * (a + 2*m))
-        d = 1.0 + num * d; d = 1e-30 if abs(d) < 1e-30 else d; d = 1.0 / d
-        c = 1.0 + num / c; c = 1e-30 if abs(c) < 1e-30 else c
-        f *= (c * d)
-        num = -(a + m) * (a + b + m) * x / ((a + 2*m) * (a + 2*m + 1))
-        d = 1.0 + num * d; d = 1e-30 if abs(d) < 1e-30 else d; d = 1.0 / d
-        c = 1.0 + num / c; c = 1e-30 if abs(c) < 1e-30 else c
-        delta = c * d
-        f *= delta
-        if abs(delta - 1.0) < 1e-10: break
-    return front * f
+def t_pdf(t, df):
+    coef = math.gamma((df + 1) / 2.0) / (math.sqrt(df * math.pi) * math.gamma(df / 2.0))
+    return coef * ((1.0 + (t**2)/df) ** (-(df + 1) / 2.0))
 
 def t_pvalue(t_stat, df):
     if df <= 0 or math.isnan(t_stat): return 1.0
-    x = df / (df + (t_stat ** 2))
-    return incbeta(df / 2.0, 0.5, x)
+    t_val = abs(t_stat)
+    upper = 60.0
+    steps = 10000
+    dt = (upper - t_val) / float(steps)
+    if dt <= 0: return 0.0
+    area = 0.5 * (t_pdf(t_val, df) + t_pdf(upper, df))
+    for i in range(1, steps):
+        area += t_pdf(t_val + i * dt, df)
+    return min(1.0, max(0.0, 2.0 * area * dt))
 
 # 1. Load and Pair Trials
 valid_pairs = []
@@ -321,6 +327,10 @@ for t in range(1, trials_requested + 1):
     m_path = os.path.join(tmp_dir, f"master_t{t}.json")
     c_path = os.path.join(tmp_dir, f"current_t{t}.json")
     if not os.path.exists(m_path) or not os.path.exists(c_path):
+        missing = []
+        if not os.path.exists(m_path): missing.append("master JSON missing (crash/timeout)")
+        if not os.path.exists(c_path): missing.append("lockfree JSON missing (crash/timeout)")
+        invalid_trials.append((t, "; ".join(missing)))
         continue
     try:
         with open(m_path) as fp: m_data = json.load(fp)
@@ -339,21 +349,27 @@ for t in range(1, trials_requested + 1):
         invalid_trials.append((t, "; ".join(err_msg)))
         continue
 
-    valid_pairs.append((m_data, c_data))
+    valid_pairs.append((m_data, c_data, t))
 
 n_valid = len(valid_pairs)
 print('=' * 120)
 print(f'          SYSTEMS GOLD-STANDARD STATISTICAL REPORT (Paired Tests & 95% Confidence Intervals)')
 print('=' * 120)
 aa_str = os.environ.get("AA_MODE", "false")
+bb_str = os.environ.get("BB_MODE", "false")
 is_aa = aa_str.lower() == "true"
+is_bb = bb_str.lower() == "true"
 
 if is_aa:
     order_note = "A/A NOISE FLOOR PROTOCOL (Master-A vs Master-B)"
     master_header = "MASTER-A (95% CI)"
     target_header = "MASTER-B (95% CI)"
+elif is_bb:
+    order_note = "B/B NOISE FLOOR PROTOCOL (LockFree-A vs LockFree-B)"
+    master_header = "LOCKFREE-A (95% CI)"
+    target_header = "LOCKFREE-B (95% CI)"
 else:
-    order_note = "REAL REVERSE ORDER (Phase-2 First on Odd)" if reverse_str.lower() == "true" else "Standard Interleaved ABBA"
+    order_note = "REAL REVERSE ORDER (Phase-2 First on Odd)" if reverse_str.lower() == "true" else "Alternating AB/BA Crossover Design"
     master_header = "MASTER (95% CI)"
     target_header = "LOCKFREE (95% CI)"
 
@@ -398,9 +414,16 @@ def paired_stat_row(name, m_vals, c_vals, unit, invert=False):
     t_stat = d_mean / d_se if d_se > 1e-9 else 0.0
     p_val = t_pvalue(abs(t_stat), df)
 
-    rel_delta = (d_mean / m_mean * 100.0) if m_mean != 0 else 0.0
-    ci_low_pct = ((d_mean - d_ci) / m_mean * 100.0) if m_mean != 0 else 0.0
-    ci_high_pct = ((d_mean + d_ci) / m_mean * 100.0) if m_mean != 0 else 0.0
+    # Direct paired relative percentage difference (exact ratio distribution)
+    pct_diffs = [((ci - mi) / float(mi) * 100.0) if mi > 0 else 0.0 for mi, ci in zip(m_vals, c_vals)]
+    pct_mean = sum(pct_diffs) / float(n_valid)
+    pct_var = sum((x - pct_mean)**2 for x in pct_diffs) / float(df) if df > 0 else 0.0
+    pct_se = math.sqrt(pct_var) / math.sqrt(n_valid)
+    pct_ci = tcrit * pct_se
+
+    ci_low_pct = pct_mean - pct_ci
+    ci_high_pct = pct_mean + pct_ci
+    rel_delta = pct_mean
 
     # 4-Tier Standard Classifier Rules (EuroMLSys / Reviewer Standard):
     # 1. EQUIVALENT: Entire 95% CI is bounded inside [-3.0%, +3.0%]
@@ -424,11 +447,35 @@ def paired_stat_row(name, m_vals, c_vals, unit, invert=False):
 
     print(f' {name:<28} {m_str:<22} {c_str:<22} {delta_str:<25} {p_str:<10} {status:<12}')
 
-paired_stat_row("Throughput", [m["tok_per_sec"] for m, c in valid_pairs], [c["tok_per_sec"] for m, c in valid_pairs], "tok/s", invert=False)
-paired_stat_row("Goodput", [m["successful"] / m["total_time_s"] if m["total_time_s"] > 0 else 0 for m, c in valid_pairs], [c["successful"] / c["total_time_s"] if c["total_time_s"] > 0 else 0 for m, c in valid_pairs], "req/s", invert=False)
-paired_stat_row("TTFT Median (p50)", [m["ttft"]["p50"] for m, c in valid_pairs], [c["ttft"]["p50"] for m, c in valid_pairs], "ms", invert=True)
-paired_stat_row("TTFT Worst-Tail (p99)", [m["ttft"]["p99"] for m, c in valid_pairs], [c["ttft"]["p99"] for m, c in valid_pairs], "ms", invert=True)
-paired_stat_row("ITL Tail Jitter (p95)", [m["itl"]["p95"] for m, c in valid_pairs], [c["itl"]["p95"] for m, c in valid_pairs], "ms", invert=True)
+paired_stat_row("Throughput", [m["tok_per_sec"] for m, c, _ in valid_pairs], [c["tok_per_sec"] for m, c, _ in valid_pairs], "tok/s", invert=False)
+paired_stat_row("Goodput", [m["successful"] / m["total_time_s"] if m["total_time_s"] > 0 else 0 for m, c, _ in valid_pairs], [c["successful"] / c["total_time_s"] if c["total_time_s"] > 0 else 0 for m, c, _ in valid_pairs], "req/s", invert=False)
+paired_stat_row("TTFT Median (p50)", [m["ttft"]["p50"] for m, c, _ in valid_pairs], [c["ttft"]["p50"] for m, c, _ in valid_pairs], "ms", invert=True)
+paired_stat_row("TTFT Worst-Tail (p99)", [m["ttft"]["p99"] for m, c, _ in valid_pairs], [c["ttft"]["p99"] for m, c, _ in valid_pairs], "ms", invert=True)
+paired_stat_row("ITL Tail Jitter (p95)", [m["itl"]["p95"] for m, c, _ in valid_pairs], [c["itl"]["p95"] for m, c, _ in valid_pairs], "ms", invert=True)
+
+# 2x2 Crossover Carryover / Order Effect Test (Grizzled Crossover Model)
+# Sequence 1: Master first, LockFree second (Odd trials in standard mode)
+# Sequence 2: LockFree first, Master second (Even trials in standard mode)
+seq1_deltas = [c_d["tok_per_sec"] - m_d["tok_per_sec"] for m_d, c_d, t_idx in valid_pairs if ((t_idx % 2 == 1) if (reverse_str.lower() != "true") else (t_idx % 2 == 0))]
+seq2_deltas = [c_d["tok_per_sec"] - m_d["tok_per_sec"] for m_d, c_d, t_idx in valid_pairs if ((t_idx % 2 == 0) if (reverse_str.lower() != "true") else (t_idx % 2 == 1))]
+
+if len(seq1_deltas) >= 2 and len(seq2_deltas) >= 2:
+    m1 = sum(seq1_deltas) / float(len(seq1_deltas))
+    m2 = sum(seq2_deltas) / float(len(seq2_deltas))
+    v1 = sum((x - m1)**2 for x in seq1_deltas) / float(len(seq1_deltas) - 1)
+    v2 = sum((x - m2)**2 for x in seq2_deltas) / float(len(seq2_deltas) - 1)
+    order_effect_val = (m1 - m2) / 2.0
+    all_master_toks = [m["tok_per_sec"] for m, _, _ in valid_pairs]
+    base_mean = sum(all_master_toks) / float(len(all_master_toks)) if all_master_toks else 1.0
+    order_effect_pct = (order_effect_val / base_mean) * 100.0
+    se_crossover = math.sqrt(v1 / float(len(seq1_deltas)) + v2 / float(len(seq2_deltas))) / 2.0
+    t_ord = (m1 - m2) / (2.0 * se_crossover) if se_crossover > 0 else 0.0
+    df_ord = len(seq1_deltas) + len(seq2_deltas) - 2
+    p_ord = t_pvalue(abs(t_ord), df_ord)
+    ci_ord = get_tcrit(df_ord) * se_crossover / base_mean * 100.0
+    status_ord = "No evidence of order bias" if p_ord > 0.05 else "Order bias detected"
+    print('-' * 120)
+    print(f' Crossover Order Effect       : {order_effect_pct:+.2f}% [{order_effect_pct - ci_ord:+.2f}%, {order_effect_pct + ci_ord:+.2f}%] (p = {p_ord:.4f}) -> {status_ord}')
 
 print('=' * 120)
 print(' Note: Classification standards (TOST 3.0% equivalence threshold):')

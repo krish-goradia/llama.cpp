@@ -445,9 +445,9 @@ def run_benchmark(
 
 def main():
     parser = argparse.ArgumentParser(description="llama.cpp server concurrency and latency benchmark")
-    parser.add_argument("--url", type=str, default="http://localhost:8080", help="Server base URL")
+    parser.add_argument("--url", "--base-url", dest="url", type=str, default="http://localhost:8080", help="Server base URL")
     parser.add_argument("-c", "--concurrency", type=int, default=8, help="Number of concurrent clients (closed loop)")
-    parser.add_argument("-n", "--requests", type=int, default=32, help="Total requests to submit (when duration=0)")
+    parser.add_argument("-n", "--requests", "--num-requests", dest="requests", type=int, default=32, help="Total requests to submit (when duration=0)")
     parser.add_argument("-d", "--duration", type=float, default=0.0, help="Sustained test duration in seconds (0 = fixed request count)")
     parser.add_argument("-r", "--rate", type=float, default=0.0, help="Target request arrival rate (Poisson open-loop lambda in req/s)")
     parser.add_argument("--max-tokens", type=int, default=64, help="Max tokens per completion")

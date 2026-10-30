@@ -133,11 +133,29 @@ if [ "$RESTART_SERVER" = true ]; then
   pkill -9 -f "llama-server" 2>/dev/null || true
   sleep 1
 
-  # Launch server in background (with optional core pinning)
+  # Launch server in background (with optional core pinning / numactl)
   SERVER_PREFIX=""
-  if [ "$PIN_CORES" = "true" ] && command -v taskset &>/dev/null; then
-    SERVER_PREFIX="taskset -c ${SERVER_CORES:-0-15}"
-    echo "Core Pinning: Pinning server to cores ${SERVER_CORES:-0-15}"
+  if [ -n "$SERVER_PREFIX_OVERRIDE" ]; then
+    SERVER_PREFIX="$SERVER_PREFIX_OVERRIDE"
+    echo "Server Launcher Override: $SERVER_PREFIX"
+  elif [ "$PIN_CORES" = "true" ] && command -v taskset &>/dev/null; then
+    # Dynamically validate or discover permitted cgroup cores
+    if [ -z "$SERVER_CORES" ] || [ -z "$CLIENT_CORES" ] || ! taskset -c "$SERVER_CORES" true 2>/dev/null; then
+      eval "$(python3 -c "
+import os
+try:
+    cpus = sorted(list(os.sched_getaffinity(0)))
+except AttributeError:
+    cpus = list(range(32))
+half = len(cpus) // 2
+srv = ','.join(map(str, cpus[:half]))
+cli = ','.join(map(str, cpus[half:]))
+print(f'export SERVER_CORES=\"{srv}\"')
+print(f'export CLIENT_CORES=\"{cli}\"')
+" 2>/dev/null || true)"
+    fi
+    SERVER_PREFIX="taskset -c $SERVER_CORES"
+    echo "Core Pinning: Pinning server to cores $SERVER_CORES"
   fi
 
   HTTP_THREADS_ARG=""
@@ -212,8 +230,23 @@ if [ -n "$SEED" ]; then
 fi
 
 CLIENT_PREFIX=""
-if [ "$PIN_CORES" = "true" ] && command -v taskset &>/dev/null; then
-  CLIENT_PREFIX="taskset -c ${CLIENT_CORES:-16-31}"
+if [ -n "$CLIENT_PREFIX_OVERRIDE" ]; then
+  CLIENT_PREFIX="$CLIENT_PREFIX_OVERRIDE"
+  echo "Client Launcher Override: $CLIENT_PREFIX"
+elif [ "$PIN_CORES" = "true" ] && command -v taskset &>/dev/null; then
+  if [ -z "$CLIENT_CORES" ] || ! taskset -c "$CLIENT_CORES" true 2>/dev/null; then
+    eval "$(python3 -c "
+import os
+try:
+    cpus = sorted(list(os.sched_getaffinity(0)))
+except AttributeError:
+    cpus = list(range(32))
+half = len(cpus) // 2
+cli = ','.join(map(str, cpus[half:]))
+print(f'export CLIENT_CORES=\"{cli}\"')
+" 2>/dev/null || true)"
+  fi
+  CLIENT_PREFIX="taskset -c $CLIENT_CORES"
 fi
 
 $CLIENT_PREFIX python3 tools/server/bench/bench_concurrency.py \
@@ -225,4 +258,5 @@ $CLIENT_PREFIX python3 tools/server/bench/bench_concurrency.py \
   $JSON_ARG \
   $DURATION_ARG \
   $RATE_ARG \
-  $SEED_ARG
+  $SEED_ARG \
+  $EXTRA_BENCH_ARGS
