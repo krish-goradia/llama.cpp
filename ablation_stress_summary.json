@@ -1,0 +1,212 @@
+{
+  "case1_standard": {
+    "target_a": {
+      "label": "Target A: Master Baseline",
+      "throughput_mean": 1417.0978505031594,
+      "throughput_ci95": 15.357863225868462,
+      "delta_percent": "BASELINE",
+      "ttft_mean": 2705.8976329135476,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_e": {
+      "label": "Target E: Neither Build (phase-2, MPSC=OFF, SPSC=OFF)",
+      "throughput_mean": 1553.5089386049206,
+      "throughput_ci95": 16.17244175720441,
+      "delta_percent": "+9.63%",
+      "ttft_mean": 2387.719837599434,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_b": {
+      "label": "Target B: Queue Only (MPSC=ON, SPSC=OFF)",
+      "throughput_mean": 1556.6387262349615,
+      "throughput_ci95": 22.809912636604473,
+      "delta_percent": "+9.85%",
+      "ttft_mean": 2390.6986267043976,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_c": {
+      "label": "Target C: Channels Only (MPSC=OFF, SPSC=ON)",
+      "throughput_mean": 1565.5308157871978,
+      "throughput_ci95": 17.427443393965813,
+      "delta_percent": "+10.47%",
+      "ttft_mean": 2375.11140282586,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_d": {
+      "label": "Target D: Full Phase-2 (MPSC=ON, SPSC=ON)",
+      "throughput_mean": 1558.4307181419244,
+      "throughput_ci95": 17.31043607965964,
+      "delta_percent": "+9.97%",
+      "ttft_mean": 2398.789018858224,
+      "sched_invol_per_1k": 0.0
+    }
+  },
+  "case2_ingress": {
+    "target_a": {
+      "label": "Target A: Master Baseline",
+      "throughput_mean": 1246.37712551494,
+      "throughput_ci95": 17.12239368933183,
+      "delta_percent": "BASELINE",
+      "ttft_mean": 402.45153719806694,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_e": {
+      "label": "Target E: Neither Build (phase-2, MPSC=OFF, SPSC=OFF)",
+      "throughput_mean": 1539.3724822155127,
+      "throughput_ci95": 86.49657330335492,
+      "delta_percent": "+23.51%",
+      "ttft_mean": 313.3581810092437,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_b": {
+      "label": "Target B: Queue Only (MPSC=ON, SPSC=OFF)",
+      "throughput_mean": 1503.9247362930296,
+      "throughput_ci95": 7.329541044388555,
+      "delta_percent": "+20.66%",
+      "ttft_mean": 320.0140976892726,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_c": {
+      "label": "Target C: Channels Only (MPSC=OFF, SPSC=ON)",
+      "throughput_mean": 1508.2246389802017,
+      "throughput_ci95": 9.049888389350693,
+      "delta_percent": "+21.01%",
+      "ttft_mean": 317.98089894800796,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_d": {
+      "label": "Target D: Full Phase-2 (MPSC=ON, SPSC=ON)",
+      "throughput_mean": 1504.8980688179054,
+      "throughput_ci95": 10.968613467809895,
+      "delta_percent": "+20.74%",
+      "ttft_mean": 319.14773102034815,
+      "sched_invol_per_1k": 0.0
+    }
+  },
+  "case3_churn": {
+    "target_a": {
+      "label": "Target A: Master Baseline",
+      "throughput_mean": 1125.3154278745653,
+      "throughput_ci95": 15.416063634286196,
+      "delta_percent": "BASELINE",
+      "ttft_mean": 1733.7856029680406,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_e": {
+      "label": "Target E: Neither Build (phase-2, MPSC=OFF, SPSC=OFF)",
+      "throughput_mean": 1201.7368532878554,
+      "throughput_ci95": 26.982712030924848,
+      "delta_percent": "+6.79%",
+      "ttft_mean": 1536.2029780282987,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_b": {
+      "label": "Target B: Queue Only (MPSC=ON, SPSC=OFF)",
+      "throughput_mean": 1195.6650178227935,
+      "throughput_ci95": 24.909039055231162,
+      "delta_percent": "+6.25%",
+      "ttft_mean": 1536.3436054777014,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_c": {
+      "label": "Target C: Channels Only (MPSC=OFF, SPSC=ON)",
+      "throughput_mean": 1220.1983027360584,
+      "throughput_ci95": 22.234397804502205,
+      "delta_percent": "+8.43%",
+      "ttft_mean": 1536.1369367954987,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_d": {
+      "label": "Target D: Full Phase-2 (MPSC=ON, SPSC=ON)",
+      "throughput_mean": 1181.6382054886633,
+      "throughput_ci95": 18.039622750376846,
+      "delta_percent": "+5.01%",
+      "ttft_mean": 1538.7037817800006,
+      "sched_invol_per_1k": 0.0
+    }
+  },
+  "case4_cores4": {
+    "target_a": {
+      "label": "Target A: Master Baseline",
+      "throughput_mean": 1492.6991987237711,
+      "throughput_ci95": 7.207058375249614,
+      "delta_percent": "BASELINE",
+      "ttft_mean": 1664.5960008041584,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_e": {
+      "label": "Target E: Neither Build (phase-2, MPSC=OFF, SPSC=OFF)",
+      "throughput_mean": 1588.3722675192282,
+      "throughput_ci95": 7.392068100771257,
+      "delta_percent": "+6.41%",
+      "ttft_mean": 1549.118522288336,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_b": {
+      "label": "Target B: Queue Only (MPSC=ON, SPSC=OFF)",
+      "throughput_mean": 1593.4098583733016,
+      "throughput_ci95": 6.971049197391574,
+      "delta_percent": "+6.75%",
+      "ttft_mean": 1544.2294824984856,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_c": {
+      "label": "Target C: Channels Only (MPSC=OFF, SPSC=ON)",
+      "throughput_mean": 1598.9758105747183,
+      "throughput_ci95": 9.485574669934664,
+      "delta_percent": "+7.12%",
+      "ttft_mean": 1543.9141215800191,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_d": {
+      "label": "Target D: Full Phase-2 (MPSC=ON, SPSC=ON)",
+      "throughput_mean": 1590.282924561016,
+      "throughput_ci95": 7.757752262754145,
+      "delta_percent": "+6.54%",
+      "ttft_mean": 1550.3798877965892,
+      "sched_invol_per_1k": 0.0
+    }
+  },
+  "case5_deep256": {
+    "target_a": {
+      "label": "Target A: Master Baseline",
+      "throughput_mean": 1348.8360015189332,
+      "throughput_ci95": 4.007559667622197,
+      "delta_percent": "BASELINE",
+      "ttft_mean": 6086.124935848056,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_e": {
+      "label": "Target E: Neither Build (phase-2, MPSC=OFF, SPSC=OFF)",
+      "throughput_mean": 1594.0440162420762,
+      "throughput_ci95": 6.441799863246572,
+      "delta_percent": "+18.18%",
+      "ttft_mean": 4942.620910178084,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_b": {
+      "label": "Target B: Queue Only (MPSC=ON, SPSC=OFF)",
+      "throughput_mean": 1590.1393200649509,
+      "throughput_ci95": 5.552066605175288,
+      "delta_percent": "+17.89%",
+      "ttft_mean": 4956.238090237457,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_c": {
+      "label": "Target C: Channels Only (MPSC=OFF, SPSC=ON)",
+      "throughput_mean": 1591.2049719477325,
+      "throughput_ci95": 14.23207809587666,
+      "delta_percent": "+17.97%",
+      "ttft_mean": 4952.311823365744,
+      "sched_invol_per_1k": 0.0
+    },
+    "target_d": {
+      "label": "Target D: Full Phase-2 (MPSC=ON, SPSC=ON)",
+      "throughput_mean": 1593.1344149847575,
+      "throughput_ci95": 6.133977031445011,
+      "delta_percent": "+18.11%",
+      "ttft_mean": 4952.878735575359,
+      "sched_invol_per_1k": 0.0
+    }
+  }
+}

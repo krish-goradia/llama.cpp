@@ -157,3 +157,19 @@ AGENTS.local.md
 # My edit
 llama.cpp-master/
 my_documentation/
+*.sh
+*.sbatch
+*.err
+*.tar.gz
+profiles_mac/
+*.patch
+.agents/
+.matplotlib/
+profiles/
+figures/
+scratch/
+*.md
+*.png
+tools/server/bench/*.py
+tools/server/bench/*.txt
+

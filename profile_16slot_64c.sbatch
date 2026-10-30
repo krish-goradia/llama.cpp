@@ -109,8 +109,6 @@ CURRENT_SRV_PID=""
 CURRENT_WRAPPER_PID=""
 
 kill_current_server() {
-    nsys shutdown 2>/dev/null || true
-    pkill -9 -f "nsys" 2>/dev/null || true
     if [ -n "$CURRENT_SRV_PID" ]; then
         echo "Stopping server process (PID: $CURRENT_SRV_PID)..."
         kill -INT "$CURRENT_SRV_PID" 2>/dev/null || true
@@ -283,7 +281,20 @@ profile_target() {
         nsys stop || true
     fi
 
-    kill_current_server
+    echo "Stopping server process cleanly (PID: $CURRENT_SRV_PID) to flush nsys trace..."
+    if [ -n "$CURRENT_SRV_PID" ]; then
+        kill -INT "$CURRENT_SRV_PID" 2>/dev/null || true
+    fi
+    if [ -n "$CURRENT_WRAPPER_PID" ]; then
+        echo "Waiting for nsys wrapper (PID: $CURRENT_WRAPPER_PID) to finalize..."
+        for w in {1..60}; do
+            kill -0 "$CURRENT_WRAPPER_PID" 2>/dev/null || break
+            sleep 1
+        done
+        wait "$CURRENT_WRAPPER_PID" 2>/dev/null || true
+        CURRENT_WRAPPER_PID=""
+    fi
+    CURRENT_SRV_PID=""
     sleep 2
 
     if [ -f "${NSYS_OUT}.nsys-rep" ]; then
@@ -293,10 +304,13 @@ profile_target() {
           "${NSYS_OUT}.nsys-rep" > "./profiles/nsys_stats_${label}_${JOB_ID}.txt" 2>&1 || true
         head -n 45 "./profiles/nsys_stats_${label}_${JOB_ID}.txt" || true
 
+        echo "Exporting SQLite database: ${NSYS_OUT}.sqlite..."
+        nsys export --type=sqlite --force-overwrite=true -o "${NSYS_OUT}.sqlite" "${NSYS_OUT}.nsys-rep" 2>/dev/null || true
+
         echo "--------------------------------------------------------------------------------"
-        echo " [$label] GPU Busy/Idle & Bubble Gap Analysis (${NSYS_OUT}.nsys-rep)"
+        echo " [$label] GPU Busy/Idle & Bubble Gap Analysis"
         echo "--------------------------------------------------------------------------------"
-        python3 gpu_gap_analysis.py "${NSYS_OUT}.nsys-rep" --bubble-us 50 | tee "./profiles/gpu_gap_${label}_${JOB_ID}.txt" || true
+        python3 gpu_gap_analysis.py "${NSYS_OUT}.sqlite" --bubble-us 50 | tee "./profiles/gpu_gap_${label}_${JOB_ID}.txt" || true
     fi
 
     # --------------------------------------------------------------------------
@@ -470,6 +484,34 @@ for target in ["master", "phase2"]:
     if s["base_tok_s"] > 0:
         overhead = ((s["base_tok_s"] - s["perf_tok_s"]) / s["base_tok_s"]) * 100.0 if s["base_tok_s"] > 0 else 0.0
         print(f"{s['label']:<10} | {s['base_tok_s']:<18.2f} | {s['perf_tok_s']:<16.2f} | {overhead:<17.1f}% | {s['cs_per_tok']:<20.2f}")
+
+def parse_gap(label):
+    files = sorted(glob.glob(f"./profiles/gpu_gap_{label}_*.txt"))
+    if not files: return None
+    t = open(files[-1]).read()
+    busy = re.search(r"GPU busy\s*:\s*([\d\.]+)%", t)
+    bubbles = re.search(r"Bubbles >= 50 us\s*:\s*(\d+)\s*gaps,\s*([\d\.]+)%", t)
+    mean_b = re.search(r"mean bubble\s*:\s*(\d+)\s*us", t)
+    step_t = re.search(r"implied step time\s*:\s*([\d\.]+)\s*ms", t)
+    return {
+        "busy": float(busy.group(1)) if busy else 0.0,
+        "bubble_pct": float(bubbles.group(2)) if bubbles else 0.0,
+        "mean_bubble_us": int(mean_b.group(1)) if mean_b else 0,
+        "step_ms": float(step_t.group(1)) if step_t else 0.0
+    }
+
+m = parse_gap("master")
+p = parse_gap("phase2")
+if m and p:
+    print("\n" + "=" * 92)
+    print(" COMPARATIVE GPU BUBBLE & IDLE GAP MATRIX (Nsight Systems SQLite)")
+    print("=" * 92)
+    print(f"{'Metric':<30} | {'Upstream Master':<18} | {'Phase-2 Lock-Free':<18} | {'Delta':<15}")
+    print("-" * 92)
+    print(f"{'GPU Busy Share':<30} | {m['busy']:<18.1f}% | {p['busy']:<18.1f}% | {p['busy'] - m['busy']:+.1f}%")
+    print(f"{'GPU Bubble Share (>=50us)':<30} | {m['bubble_pct']:<18.1f}% | {p['bubble_pct']:<18.1f}% | {p['bubble_pct'] - m['bubble_pct']:+.1f}%")
+    print(f"{'Mean Bubble Duration':<30} | {m['mean_bubble_us']:<18} us | {p['mean_bubble_us']:<18} us | {p['mean_bubble_us'] - m['mean_bubble_us']:+d} us")
+    print(f"{'Implied Step Time':<30} | {m['step_ms']:<18.2f} ms | {p['step_ms']:<18.2f} ms | {p['step_ms'] - m['step_ms']:+.2f} ms")
 
 EOF
 

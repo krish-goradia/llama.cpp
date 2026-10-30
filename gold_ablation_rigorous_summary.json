@@ -1,0 +1,62 @@
+{
+  "target_a": {
+    "label": "Target A: Master Baseline",
+    "throughput_mean": 1468.6177304782755,
+    "throughput_ci95": 5.961798656883827,
+    "throughput_sd": 8.334598897915816,
+    "delta_percent": "BASELINE",
+    "ttft_mean": 2595.548113071709,
+    "ttft_ci95": 11.649686269641935,
+    "sched_invol_per_1k": 0.687
+  },
+  "target_e": {
+    "label": "Target E: Neither Build (phase-2 tree, MPSC=OFF, SPSC=OFF)",
+    "throughput_mean": 1637.5275910995174,
+    "throughput_ci95": 11.054789108403362,
+    "throughput_sd": 15.454603287080758,
+    "delta_percent": "+11.50%",
+    "ttft_mean": 2270.132165859104,
+    "ttft_ci95": 13.181443382811043,
+    "sched_invol_per_1k": 0.298
+  },
+  "target_s": {
+    "label": "Target S: Master with Scheduler Pinned to Core 0",
+    "throughput_mean": 1492.1588555150984,
+    "throughput_ci95": 6.721963573105685,
+    "throughput_sd": 9.397310008708102,
+    "delta_percent": "+1.60%",
+    "ttft_mean": 2548.4149398456793,
+    "ttft_ci95": 16.468767420900328,
+    "sched_invol_per_1k": 0.3929999999999999
+  },
+  "target_b": {
+    "label": "Target B: Queue Only (MPSC=ON, SPSC=OFF)",
+    "throughput_mean": 1637.1479609847004,
+    "throughput_ci95": 6.189303702959459,
+    "throughput_sd": 8.652651119304211,
+    "delta_percent": "+11.48%",
+    "ttft_mean": 2262.191207394062,
+    "ttft_ci95": 8.649130481378068,
+    "sched_invol_per_1k": 0.321
+  },
+  "target_c": {
+    "label": "Target C: Channels Only (MPSC=OFF, SPSC=ON)",
+    "throughput_mean": 1641.6279169288543,
+    "throughput_ci95": 8.283790407308423,
+    "throughput_sd": 11.580745069208023,
+    "delta_percent": "+11.78%",
+    "ttft_mean": 2261.1027684877627,
+    "ttft_ci95": 13.55960763210075,
+    "sched_invol_per_1k": 0.22700000000000004
+  },
+  "target_d": {
+    "label": "Target D: Full Phase-2 (MPSC=ON, SPSC=ON)",
+    "throughput_mean": 1636.4796259839122,
+    "throughput_ci95": 7.081530283714584,
+    "throughput_sd": 9.899984534039113,
+    "delta_percent": "+11.43%",
+    "ttft_mean": 2265.3115243447246,
+    "ttft_ci95": 11.821194351613379,
+    "sched_invol_per_1k": 0.30999999999999994
+  }
+}

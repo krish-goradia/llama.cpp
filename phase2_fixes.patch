@@ -1,335 +1,228 @@
-diff --git a/src/llama-sampler.cpp b/src/llama-sampler.cpp
-index 6e32afdb1..30f9043c1 100644
---- a/src/llama-sampler.cpp
-+++ b/src/llama-sampler.cpp
-@@ -2876,8 +2876,6 @@ struct llama_sampler_penalties : public llama_sampler_backend {
-     std::vector<int32_t> host_token_ids;
-     std::vector<int32_t> host_counts;
+diff --git a/run_bench.sh b/run_bench.sh
+index 8c0c7f9b6..4537bac2b 100755
+--- a/run_bench.sh
++++ b/run_bench.sh
+@@ -83,6 +83,10 @@ while [[ $# -gt 0 ]]; do
+       DO_BUILD=false
+       shift
+       ;;
++    --seed)
++      SEED="$2"
++      shift 2
++      ;;
+     --json-out)
+       JSON_OUT="$2"
+       shift 2
+@@ -125,8 +129,14 @@ if [ "$RESTART_SERVER" = true ]; then
+   pkill -9 -f "llama-server" 2>/dev/null || true
+   sleep 1
  
--    std::vector<std::pair<llama_token, int>> to_search;
--
-     void copy_state(const llama_sampler_penalties & src) {
-         // note: inp_token_ids/inp_counts belong to the current sampling graph
-         prev        = src.prev;
-@@ -2966,30 +2964,27 @@ static void llama_sampler_penalties_apply(struct llama_sampler * smpl, llama_tok
-         data.logit -= float(count) * ctx->penalty_freq + float(count > 0) * ctx->penalty_present;
-     };
- 
--    ctx->to_search.clear();
--
--    // fast path: update candidates directly where idx == id (not shuffled)
-+    // check if candidates are un-shuffled (direct index matches token id)
-+    bool can_fast_path = true;
-     for (const auto & it : ctx->token_count) {
-         const llama_token token = it.first;
--        const int count = it.second;
--
--        assert(count > 0 && count <= ctx->penalty_last_n);
--
--        if (token >= 0 && (size_t) token < cur_p->size && cur_p->data[token].id == token) {
--            apply_penalty(cur_p->data[token], count);
--        } else {
--            ctx->to_search.push_back({ token, count });
-+        if (token < 0 || (size_t) token >= cur_p->size || cur_p->data[token].id != token) {
-+            can_fast_path = false;
-+            break;
-         }
-     }
- 
--    // fallback for candidates that were shuffled
--    if (!ctx->to_search.empty()) {
-+    if (can_fast_path) {
-+        // fast path: update candidates directly in O(N_penalized)
-+        for (const auto & it : ctx->token_count) {
-+            apply_penalty(cur_p->data[it.first], it.second);
-+        }
-+    } else {
-+        // fallback for shuffled candidates: single pass over candidates with map lookup (O(V), matching legacy master)
-         for (size_t i = 0; i < cur_p->size; ++i) {
--            for (const auto & item : ctx->to_search) {
--                if (cur_p->data[i].id == item.first) {
--                    apply_penalty(cur_p->data[i], item.second);
--                    break;
--                }
-+            const auto it = ctx->token_count.find(cur_p->data[i].id);
-+            if (it != ctx->token_count.end()) {
-+                apply_penalty(cur_p->data[i], it->second);
-             }
-         }
-     }
-@@ -3342,7 +3337,6 @@ struct llama_sampler_dry {
-     std::vector<int> dry_repeat_count;
-     std::unordered_map<llama_token, int> dry_max_token_repeat;
-     ring_buffer<llama_token> last_tokens;
--    std::vector<std::pair<llama_token, int>> to_search;
- };
- 
- // Ported from Koboldcpp, original PR: https://github.com/LostRuins/koboldcpp/pull/982 (Original author: pi6am)
-@@ -3607,28 +3601,27 @@ static void llama_sampler_dry_apply(struct llama_sampler * smpl, llama_token_dat
-         }
-     };
- 
--    ctx->to_search.clear();
--
--    // Fast path: update candidates directly where idx == id (not shuffled)
-+    // check if candidates are un-shuffled (direct index matches token id)
-+    bool can_fast_path = true;
-     for (const auto & af_kvp : ctx->dry_max_token_repeat) {
-         const llama_token token = af_kvp.first;
--        const int repeat_len = af_kvp.second;
--
--        if (token >= 0 && (size_t) token < cur_p->size && cur_p->data[token].id == token) {
--            apply_dry_penalty(cur_p->data[token], repeat_len);
--        } else {
--            ctx->to_search.push_back({ token, repeat_len });
-+        if (token < 0 || (size_t) token >= cur_p->size || cur_p->data[token].id != token) {
-+            can_fast_path = false;
-+            break;
-         }
-     }
- 
--    // Fallback: search remaining candidates only if the array was shuffled
--    if (!ctx->to_search.empty()) {
-+    if (can_fast_path) {
-+        // fast path: update candidates directly in O(N_penalized)
-+        for (const auto & af_kvp : ctx->dry_max_token_repeat) {
-+            apply_dry_penalty(cur_p->data[af_kvp.first], af_kvp.second);
-+        }
-+    } else {
-+        // fallback for shuffled candidates: single pass over candidates with map lookup (O(V), matching legacy master)
-         for (size_t i = 0; i < cur_p->size; ++i) {
--            for (const auto & item : ctx->to_search) {
--                if (cur_p->data[i].id == item.first) {
--                    apply_dry_penalty(cur_p->data[i], item.second);
--                    break;
--                }
-+            const auto it = ctx->dry_max_token_repeat.find(cur_p->data[i].id);
-+            if (it != ctx->dry_max_token_repeat.end()) {
-+                apply_dry_penalty(cur_p->data[i], it->second);
-             }
-         }
-     }
-@@ -3728,7 +3721,6 @@ struct llama_sampler * llama_sampler_init_dry(const struct llama_vocab * vocab,
-             /* .dry_repeat_count       = */ dry_enabled ? std::vector<int>(dry_penalty_last_n, 0) : std::vector<int>{},
-             /* .dry_max_token_repeat   = */ {},
-             /* .last_tokens            = */ dry_enabled ? ring_buffer<llama_token>(dry_penalty_last_n) : ring_buffer<llama_token>(0),
--            /* .to_search              = */ {},
-         }
-     );
- }
-diff --git a/tests/test-sampling.cpp b/tests/test-sampling.cpp
-index d727ab632..ff0c8c227 100644
---- a/tests/test-sampling.cpp
-+++ b/tests/test-sampling.cpp
-@@ -187,6 +187,39 @@ static void test_penalties(
-     tester.check();
- }
- 
-+static void test_penalties_shuffled(
-+    const std::vector<float> & probs, const std::vector<llama_token> & last_tokens,
-+    const std::vector<float> & probs_expected, float repeat_penalty, float alpha_frequency, float alpha_presence
-+) {
-+    GGML_ASSERT(probs.size() == probs_expected.size());
+-  # Launch server in background
+-  ./build/bin/llama-server \
++  # Launch server in background (with optional core pinning)
++  SERVER_PREFIX=""
++  if [ "$PIN_CORES" = "true" ] && command -v taskset &>/dev/null; then
++    SERVER_PREFIX="taskset -c ${SERVER_CORES:-0-15}"
++    echo "Core Pinning: Pinning server to cores ${SERVER_CORES:-0-15}"
++  fi
 +
-+    // initialize candidates in reverse order to force cur_p->data[i].id != i
-+    std::vector<llama_token_data> cur;
-+    for (int i = (int) probs.size() - 1; i >= 0; --i) {
-+        cur.push_back({ (llama_token) i, logf(probs[i]), 0.0f });
-+    }
++  $SERVER_PREFIX ./build/bin/llama-server \
+     -m "$MODEL_PATH" \
+     -c "$CTX" \
+     -np "$SLOTS" \
+@@ -184,7 +194,17 @@ if [ -n "$RATE" ] && [ "$RATE" != "0.0" ] && [ "$RATE" != "0" ]; then
+   RATE_ARG="--rate $RATE"
+ fi
+ 
+-python3 tools/server/bench/bench_concurrency.py \
++SEED_ARG=""
++if [ -n "$SEED" ]; then
++  SEED_ARG="--seed $SEED"
++fi
 +
-+    auto * sampler = llama_sampler_init_penalties((int32_t) probs.size(), (int32_t) last_tokens.size(), repeat_penalty, alpha_frequency, alpha_presence);
++CLIENT_PREFIX=""
++if [ "$PIN_CORES" = "true" ] && command -v taskset &>/dev/null; then
++  CLIENT_PREFIX="taskset -c ${CLIENT_CORES:-16-31}"
++fi
 +
-+    for (size_t i = 0; i < last_tokens.size(); i++) {
-+        llama_sampler_accept(sampler, last_tokens[i]);
-+    }
++$CLIENT_PREFIX python3 tools/server/bench/bench_concurrency.py \
+   --url "http://localhost:${PORT}" \
+   -c "$CONCURRENCY" \
+   -n "$REQUESTS" \
+@@ -192,4 +212,5 @@ python3 tools/server/bench/bench_concurrency.py \
+   --cancel-rate "$CANCEL_RATE" \
+   $JSON_ARG \
+   $DURATION_ARG \
+-  $RATE_ARG
++  $RATE_ARG \
++  $SEED_ARG
+diff --git a/tools/server/CMakeLists.txt b/tools/server/CMakeLists.txt
+index 280bd9e19..77f256ce0 100644
+--- a/tools/server/CMakeLists.txt
++++ b/tools/server/CMakeLists.txt
+@@ -1,4 +1,13 @@
+-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
++option(LLAMA_SERVER_DISABLE_MPSC "Disable lock-free MPSC queue" OFF)
++option(LLAMA_SERVER_DISABLE_SPSC "Disable lock-free SPSC channels" OFF)
 +
-+    llama_token_data_array cur_p = { cur.data(), cur.size(), -1, false };
-+    llama_sampler_apply(sampler, &cur_p);
++if (LLAMA_SERVER_DISABLE_MPSC)
++    add_compile_definitions(LLAMA_SERVER_DISABLE_MPSC)
++endif()
 +
-+    auto * dist = llama_sampler_init_dist(0);
-+    llama_sampler_apply(dist, &cur_p);
-+    llama_sampler_free(dist);
-+    llama_sampler_free(sampler);
++if (LLAMA_SERVER_DISABLE_SPSC)
++    add_compile_definitions(LLAMA_SERVER_DISABLE_SPSC)
++endif()
+ 
+ # server-context containing the core server logic, used by llama-server and CLI
+ 
+diff --git a/tools/server/bench/bench_concurrency.py b/tools/server/bench/bench_concurrency.py
+index dbcacda1f..488471d90 100644
+--- a/tools/server/bench/bench_concurrency.py
++++ b/tools/server/bench/bench_concurrency.py
+@@ -220,6 +220,7 @@ def run_benchmark(
+     cancel_rate,
+     warmup_requests=2,
+     json_out=None,
++    seed=None,
+ ):
+     is_open_loop = arrival_rate > 0.0
+     is_duration_based = duration > 0.0
+@@ -236,6 +237,8 @@ def run_benchmark(
+     print(f" Max Tokens     : {max_tokens}")
+     print(f" Cancel Rate    : {cancel_rate * 100:.1f}%")
+     print(f" Warmup Requests: {warmup_requests} (discarded)")
++    if seed is not None:
++        print(f" Random Seed    : {seed} (Common Random Numbers)")
+     print("------------------------------------------------------------------")
+ 
+     # Step 0: Prime server
+@@ -247,6 +250,9 @@ def run_benchmark(
+     results = []
+     t_start = time.perf_counter()
+ 
++    # Deterministic RNG for Common Random Numbers (CRN)
++    prng = random.Random(seed) if seed is not None else random.Random()
 +
-+    for (size_t i = 0; i < cur_p.size; ++i) {
-+        llama_token id = cur_p.data[i].id;
-+        GGML_ASSERT(id >= 0 && (size_t) id < probs_expected.size());
-+        GGML_ASSERT(fabs(cur_p.data[i].p - probs_expected[id]) < 1e-5);
-+    }
-+}
-+
- static void test_dry(
-     const std::vector<float> & probs, const std::vector<llama_token> & last_tokens,
-     const std::vector<float> & expected_probs, float dry_multiplier, float dry_base,
-@@ -384,6 +417,13 @@ int main(void) {
-     test_penalties({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2},       {0.000023f, 0.000023f, 0.000023f, 0.499966f, 0.499966f}, 1.0f, 5.0f, 5.0f);
-     test_penalties({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2, 0, 0}, {0.000000f, 0.000023f, 0.000023f, 0.499977f, 0.499977f}, 1.0f, 5.0f, 5.0f);
+     if is_open_loop:
+         # ----------------------------------------------------------------------
+         # Open-Loop Poisson Arrival Mode
+@@ -266,14 +272,14 @@ def run_benchmark(
+                     break
  
-+    test_penalties_shuffled({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0}, {0, 0.25f, 0.25f, 0.25f, 0.25f},   50.0f, 0.0f, 0.0f);
-+    test_penalties_shuffled({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2}, {0, 0, 0, 0.5f, 0.5f},       50.0f, 0.0f, 0.0f);
-+    test_penalties_shuffled({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2, 0, 0}, {0, 0, 0, 0.5f, 0.5f}, 50.0f, 0.0f, 0.0f);
-+    test_penalties_shuffled({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0},             {0.000011f, 0.249997f, 0.249997f, 0.249997f, 0.249997f}, 1.0f, 5.0f, 5.0f);
-+    test_penalties_shuffled({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2},       {0.000023f, 0.000023f, 0.000023f, 0.499966f, 0.499966f}, 1.0f, 5.0f, 5.0f);
-+    test_penalties_shuffled({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2, 0, 0}, {0.000000f, 0.000023f, 0.000023f, 0.499977f, 0.499977f}, 1.0f, 5.0f, 5.0f);
-+
+                 # Sample exponential inter-arrival interval
+-                interval = random.expovariate(arrival_rate)
++                interval = prng.expovariate(arrival_rate)
+                 cur_scheduled += interval
  
-     test_dry({0.25f, 0.25f, 0.25f, 0.25f}, {0, 1}, {0.25f, 0.25f, 0.25f, 0.25f}, 1.0f, 1.1f, 2, 4, {});
-     test_dry({0.25f, 0.25f, 0.25f, 0.25f}, {0, 1, 2, 0, 1}, {0.296923f, 0.296923f, 0.109232f, 0.296923f}, 1.0f, 1.1f, 2, 5, {});
-diff --git a/tools/server/server-common.h b/tools/server/server-common.h
-index 6488be344..504fc0aa7 100644
---- a/tools/server/server-common.h
-+++ b/tools/server/server-common.h
-@@ -21,6 +21,30 @@
+                 delay = cur_scheduled - time.perf_counter()
+                 if delay > 0:
+                     time.sleep(delay)
  
- using json = nlohmann::ordered_json;
+-                should_cancel = (random.random() < cancel_rate)
++                should_cancel = (prng.random() < cancel_rate)
+                 futures.append(
+                     executor.submit(
+                         send_streaming_request,
+@@ -301,6 +307,7 @@ def run_benchmark(
+         shared_counter = [0]
  
-+#if defined(__has_include)
-+#  if __has_include(<nvtx3/nvToolsExt.h>)
-+#    include <nvtx3/nvToolsExt.h>
-+#    define SERVER_HAS_NVTX 1
-+#  elif __has_include(<nvToolsExt.h>)
-+#    include <nvToolsExt.h>
-+#    define SERVER_HAS_NVTX 1
-+#  endif
-+#endif
-+
-+#ifdef SERVER_HAS_NVTX
-+struct server_nvtx_range {
-+    server_nvtx_range(const char * name) {
-+        nvtxRangePushA(name);
-+    }
-+    ~server_nvtx_range() {
-+        nvtxRangePop();
-+    }
-+};
-+#define SERVER_NVTX_RANGE(name) server_nvtx_range _nvtx_range_##__LINE__(name)
-+#else
-+#define SERVER_NVTX_RANGE(name)
-+#endif
-+
- #define SLT_DBG(slot, fmt, ...) LOG_DBG("slot %12.*s: id %2d | task %d | " fmt, 12, __func__, (slot).id, ((slot).task ? (slot).task->id : -1), __VA_ARGS__)
- #define SLT_TRC(slot, fmt, ...) LOG_TRC("slot %12.*s: id %2d | task %d | " fmt, 12, __func__, (slot).id, ((slot).task ? (slot).task->id : -1), __VA_ARGS__)
- #define SLT_INF(slot, fmt, ...) LOG_INF("slot %12.*s: id %2d | task %d | " fmt, 12, __func__, (slot).id, ((slot).task ? (slot).task->id : -1), __VA_ARGS__)
-diff --git a/tools/server/server-context.cpp b/tools/server/server-context.cpp
-index f6a4732a0..57ab04e29 100644
---- a/tools/server/server-context.cpp
-+++ b/tools/server/server-context.cpp
-@@ -1826,7 +1826,9 @@ private:
+         def worker_loop(client_id):
++            client_prng = random.Random(seed + client_id if seed is not None else None)
+             while not stop_event.is_set():
+                 if time.perf_counter() - t_start >= duration:
+                     stop_event.set()
+@@ -308,7 +315,7 @@ def run_benchmark(
+                 with counter_lock:
+                     rid = shared_counter[0]
+                     shared_counter[0] += 1
+-                should_cancel = (random.random() < cancel_rate)
++                should_cancel = (client_prng.random() < cancel_rate)
+                 m = send_streaming_request(
+                     server_url=server_url,
+                     prompt=prompt,
+@@ -447,6 +454,7 @@ def main():
+     parser.add_argument("--prompt", type=str, default="Explain the theory of relativity in simple terms.", help="Prompt text")
+     parser.add_argument("-k", "--cancel", "--cancel-rate", dest="cancel_rate", type=float, default=0.0, help="Probability of client aborting connection mid-generation [0.0 - 1.0]")
+     parser.add_argument("--warmup", type=int, default=2, help="Number of discarded warmup requests to prime CUDA context")
++    parser.add_argument("--seed", type=int, default=None, help="Random seed for Common Random Numbers (CRN)")
+     parser.add_argument("--json-out", type=str, default=None, help="Path to write JSON benchmark metrics")
  
-             slot.add_token(result);
-             if (slot.task->params.stream) {
--                send_partial_response(slot, result, false);
-+                if (!send_partial_response(slot, result, false)) {
-+                    return false;
-+                }
-             }
-         }
+     args = parser.parse_args()
+@@ -461,6 +469,7 @@ def main():
+         cancel_rate=args.cancel_rate,
+         warmup_requests=args.warmup,
+         json_out=args.json_out,
++        seed=args.seed,
+     )
  
-@@ -1995,7 +1997,8 @@ private:
-         queue_results.send(std::move(res));
-     }
  
--    void send_partial_response(server_slot & slot, const completion_token_output & tkn, bool is_progress, bool is_begin = false) {
-+    bool send_partial_response(server_slot & slot, const completion_token_output & tkn, bool is_progress, bool is_begin = false) {
-+        SERVER_NVTX_RANGE("result_send");
-         auto res = std::make_unique<server_task_result_cmpl_partial>();
- 
-         res->id    = slot.task->id;
-@@ -2036,10 +2039,19 @@ private:
-         }
- 
-         if (slot.task->res_channel) {
--            slot.task->res_channel->push_and_notify(std::move(res));
-+            if (!slot.task->res_channel->push_and_notify(std::move(res))) {
-+                SLT_WRN(slot, "client response channel full or closed, aborting task %d\n", slot.task->id);
-+                if (slot.task->cancel_token) {
-+                    slot.task->cancel_token->store(true, std::memory_order_relaxed);
-+                }
-+                slot.stop = STOP_TYPE_LIMIT;
-+                slot.has_next_token = false;
-+                return false;
-+            }
-         } else {
-             queue_results.send(std::move(res));
-         }
-+        return true;
-     }
- 
-     void send_final_response(server_slot & slot) {
-@@ -2786,6 +2798,7 @@ private:
-         }
- 
-         try {
-+            SERVER_NVTX_RANGE("batch_build");
-             scoped_timer t(t_pre_decode, n_pre_decode);
-             pre_decode();
-             batch.render();
-@@ -2824,6 +2837,7 @@ private:
-         for (int32_t off = 0; off < batch.size(); off = off_next) {
-             const int32_t n_tokens = std::min(n_batch, batch.size() - off);
-             try {
-+                SERVER_NVTX_RANGE("llama_decode");
-                 scoped_timer t(t_decode, n_decode);
-                 // TODO @ngxson : maybe handle n_batch == 1 here instead of inside decode()
- 
-@@ -3814,6 +3828,7 @@ private:
- 
-             llama_token id;
-             {
-+                SERVER_NVTX_RANGE("sampling");
-                 scoped_timer timer(t_sampl, n_sampl);
-                 id = common_sampler_sample(slot.smpl.get(), slot.ctx_tgt, tok_idx);
-             }
 diff --git a/tools/server/server-queue.cpp b/tools/server/server-queue.cpp
-index 398f7d072..066021085 100644
+index 066021085..2789d95f3 100644
 --- a/tools/server/server-queue.cpp
 +++ b/tools/server/server-queue.cpp
-@@ -127,6 +127,8 @@ void server_queue::terminate() {
+@@ -40,6 +40,14 @@ int server_queue::post(server_task && task, bool front) {
+         }
+         condition_tasks.notify_one();
+     } else {
++#if defined(LLAMA_SERVER_DISABLE_MPSC)
++        std::unique_lock<std::mutex> lock(mutex_tasks);
++        queue_tasks.push(std::move(task));
++        if (reset_timer) {
++            time_last_task = ggml_time_ms();
++        }
++        condition_tasks.notify_one();
++#else
+         queue_tasks.push(std::move(task));
+         {
+             std::unique_lock<std::mutex> lock(mutex_tasks);
+@@ -48,6 +56,7 @@ int server_queue::post(server_task && task, bool front) {
+             }
+             condition_tasks.notify_one();
+         }
++#endif
+     }
+     return task_id;
  }
- 
- bool server_queue::process_new_tasks(bool is_yielding) {
-+    SERVER_NVTX_RANGE("process_new_tasks");
-+
-     // 1. Tier 1: Process deferred tasks if not yielding (highest priority for available slots)
-     if (!is_yielding) {
-         if (!queue_tasks_pinned.empty()) {
 diff --git a/tools/server/server-queue.h b/tools/server/server-queue.h
-index d1c8622dc..aedd3df0c 100644
+index aedd3df0c..f5e0eb09f 100644
 --- a/tools/server/server-queue.h
 +++ b/tools/server/server-queue.h
-@@ -160,15 +160,20 @@ struct response_channel {
+@@ -160,10 +160,20 @@ struct response_channel {
      std::condition_variable cv;
      std::atomic<bool> closed{false};
  
--    void push_and_notify(server_task_result_ptr && res) {
--        while (!ring.try_push(std::move(res))) {
--            if (closed.load(std::memory_order_relaxed)) {
--                return; // channel closed, drop remaining outputs
--            }
-+    bool push_and_notify(server_task_result_ptr && res) {
-+        if (closed.load(std::memory_order_relaxed)) {
-+            return false;
-+        }
-+        if (!ring.try_push(std::move(res))) {
-+            // channel full: client is too slow or stalled
-+            close();
-+            return false;
-+        }
-+        {
-+            std::lock_guard<std::mutex> lock(mtx);
-             cv.notify_one();
--            std::this_thread::yield();
++#if defined(LLAMA_SERVER_DISABLE_SPSC)
++    static std::mutex & get_global_resp_mutex() {
++        static std::mutex global_mtx;
++        return global_mtx;
++    }
++#endif
++
+     bool push_and_notify(server_task_result_ptr && res) {
+         if (closed.load(std::memory_order_relaxed)) {
+             return false;
          }
--        cv.notify_one();
-+        return true;
++#if defined(LLAMA_SERVER_DISABLE_SPSC)
++        std::lock_guard<std::mutex> global_lock(get_global_resp_mutex());
++#endif
+         if (!ring.try_push(std::move(res))) {
+             // channel full: client is too slow or stalled
+             close();
+@@ -177,11 +187,17 @@ struct response_channel {
      }
  
      server_task_result_ptr pop_wait(int timeout_seconds) {
-@@ -185,6 +190,7 @@ struct response_channel {
- 
-     void close() {
-         closed.store(true, std::memory_order_release);
-+        std::lock_guard<std::mutex> lock(mtx);
-         cv.notify_all();
-     }
- };
++#if defined(LLAMA_SERVER_DISABLE_SPSC)
++        std::unique_lock<std::mutex> global_lock(get_global_resp_mutex());
++#endif
+         server_task_result_ptr res;
+         if (ring.try_pop(res)) {
+             return res;
+         }
+         std::unique_lock<std::mutex> lock(mtx);
++#if defined(LLAMA_SERVER_DISABLE_SPSC)
++        global_lock.unlock();
++#endif
+         cv.wait_for(lock, std::chrono::seconds(timeout_seconds), [&] {
+             return ring.try_pop(res) || closed.load(std::memory_order_relaxed);
+         });

@@ -117,9 +117,31 @@ if [ -d "llama.cpp-master" ]; then
     cmake --build llama.cpp-master/build --config Release -j 32 --target llama-server
 fi
 
-# Core Allocation: Server on Cores 0-15, Client strictly on Cores 24-31 (No overlap!)
-export SERVER_CORES="0-15"
-export CLIENT_CORES="24-31"
+# Dynamic Hardware CPU Core Pinning (Dynamically bound to SLURM assigned cores)
+eval "$(python3 -c "
+import os
+try:
+    cpus = sorted(list(os.sched_getaffinity(0)))
+except AttributeError:
+    cpus = list(range(32))
+
+half = len(cpus) // 2
+srv_cpus = cpus[:half]
+cli_cpus = cpus[half:]
+
+srv = ','.join(map(str, srv_cpus))
+cli = ','.join(map(str, cli_cpus))
+sched = str(srv_cpus[0])
+worker = ','.join(map(str, srv_cpus[1:]))
+
+print(f'export SERVER_CORES=\"{srv}\"')
+print(f'export CLIENT_CORES=\"{cli}\"')
+print(f'export SCHED_CORE=\"{sched}\"')
+print(f'export WORKER_CORES=\"{worker}\"')
+")"
+
+echo "Dynamic Core Isolation: Server on [$SERVER_CORES] | Client on [$CLIENT_CORES]"
+echo "Target S Configuration : Sched Core [$SCHED_CORE] | Worker Cores [$WORKER_CORES]"
 
 TMP_DIR="$(mktemp -d -t llama_ablation_rigorous_XXXXXX)"
 echo "Ablation results stored at: $TMP_DIR"
@@ -182,22 +204,20 @@ run_rigorous_target() {
         TELEMETRY_OUT="$TMP_DIR/telemetry_${TARGET_KEY}_t${trial}.json"
 
         # Server Core Pinning:
-        # Default: Server on Cores 0-15
-        # Target S: Launch server on Cores 1-15, then move Main Scheduler Loop (PID) to Core 0,
-        # ensuring worker/HTTP threads stay strictly on Cores 1-15 without touching Core 0.
+        # Default: Server on all SERVER_CORES (16 dynamic cores)
+        # Target S: Launch server on WORKER_CORES (15 cores), then pin Main Scheduler Loop (PID) to SCHED_CORE (1 core),
+        # ensuring worker/HTTP threads stay strictly on WORKER_CORES without touching SCHED_CORE.
         local SERVER_AFFINITY="$SERVER_CORES"
         if [ "$PIN_SCHEDULER_CORE" = "true" ]; then
-            SERVER_AFFINITY="1-15"
+            SERVER_AFFINITY="$WORKER_CORES"
         fi
 
         taskset -c $SERVER_AFFINITY "$BIN_DIR/bin/llama-server" \
             -m "$MODEL_FILE" \
-            -s "$SLOTS" \
+            -np "$SLOTS" \
             -c 16384 \
             --port "$PORT" \
-            --threads 8 \
             --threads-http 31 \
-            -ub 512 -b 512 \
             > "$SERVER_LOG" 2>&1 &
         SERVER_PID=$!
 
@@ -223,13 +243,13 @@ run_rigorous_target() {
         grep -E "task queue ingress|response egress" "$SERVER_LOG" 2>/dev/null | sed 's/^/    /' || echo "    (Standard Master Baseline Queue)"
 
         # If Scheduler Dedicated Pinning is requested (Target S):
-        # Explicitly pin Main Scheduler Loop (TID = PID) to Core 0, and confirm HTTP worker threads on Cores 1-15
+        # Explicitly pin Main Scheduler Loop (TID = PID) to SCHED_CORE, and confirm HTTP worker threads on WORKER_CORES
         if [ "$PIN_SCHEDULER_CORE" = "true" ]; then
             echo "  [Target S] Applying Scheduler Isolation Pinning..."
-            taskset -cp 0 "$SERVER_PID"
+            taskset -cp "$SCHED_CORE" "$SERVER_PID"
             for tid in $(ls /proc/$SERVER_PID/task/ 2>/dev/null); do
                 if [ "$tid" != "$SERVER_PID" ]; then
-                    taskset -cp 1-15 "$tid" >/dev/null 2>&1 || true
+                    taskset -cp "$WORKER_CORES" "$tid" >/dev/null 2>&1 || true
                 fi
             done
             local SAMPLE_TID=$(ls /proc/$SERVER_PID/task/ 2>/dev/null | grep -v "^$SERVER_PID$" | head -n 1)
@@ -333,40 +353,68 @@ for key, label in targets:
         "sched_nv_switches": sched_nv_switches
     }
 
-def mean_std(arr):
-    if not arr: return 0.0, 0.0
-    m = sum(arr) / len(arr)
-    var = sum((x - m) ** 2 for x in arr) / max(1, len(arr) - 1)
-    return m, math.sqrt(var)
+def calc_stats(arr):
+    if not arr: return 0.0, 0.0, 0.0
+    n = len(arr)
+    m = sum(arr) / n
+    if n < 2: return m, 0.0, 0.0
+    s = math.sqrt(sum((x - m) ** 2 for x in arr) / (n - 1))
+    t_crit = {
+        2: 12.706, 3: 4.303, 4: 3.182, 5: 2.776,
+        6: 2.571, 7: 2.447, 8: 2.365, 9: 2.306,
+        10: 2.262, 11: 2.228, 12: 2.201, 15: 2.145, 20: 2.093
+    }.get(n, 1.96)
+    ci95 = t_crit * s / math.sqrt(n)
+    return m, ci95, s
 
-print("\n" + "=" * 120)
-print("             EUYSYS / EUROMLSYS RIGOROUS 6-WAY MECHANISTIC ABLATION REPORT (128c / 16s)")
-print("=" * 120)
-print(f" {'TARGET':<52} {'THROUGHPUT (tok/s)':<22} {'DELTA vs MASTER':<18} {'SCHED INVOL/1k tok':<20}")
-print("-" * 120)
+print("\n" + "=" * 132)
+print("                    EUROMLSYS RIGOROUS 6-WAY MECHANISTIC ABLATION REPORT (128c / 16s)")
+print("=" * 132)
+print(f" {'TARGET':<44} | {'THROUGHPUT (tok/s) [95% CI]':<28} | {'DELTA':<10} | {'TTFT MEAN (ms)':<20} | {'SCHED INVOL/1k':<14}")
+print("-" * 132)
 
-m_base, _ = mean_std(data["target_a"]["throughput"])
+m_base, _, _ = calc_stats(data["target_a"]["throughput"])
+
+summary_out = {}
 
 for key, label in targets:
     t_arr = data[key]["throughput"]
-    m, s = mean_std(t_arr)
-    delta_str = "0.0% (BASELINE)"
+    m, ci95, s = calc_stats(t_arr)
+    delta_str = "BASELINE"
     if m_base > 0 and key != "target_a":
         diff = ((m - m_base) / m_base) * 100.0
         delta_str = f"{diff:+.2f}%"
     
-    sched_m, _ = mean_std(data[key]["sched_nv_switches"])
+    ttft_m, ttft_ci, _ = calc_stats(data[key]["ttft_mean"])
+    sched_m, _, _ = calc_stats(data[key]["sched_nv_switches"])
     sched_str = f"{sched_m:.2f}" if data[key]["sched_nv_switches"] else "N/A"
     
-    t_str = f"{m:.2f} +/- {s:.2f}" if len(t_arr) > 1 else (f"{m:.2f}" if len(t_arr) == 1 else "NO RUNS")
-    print(f" {label:<52} {t_str:<22} {delta_str:<18} {sched_str:<20}")
+    t_str = f"{m:.2f} +/- {ci95:.2f} (s={s:.2f})" if len(t_arr) > 1 else (f"{m:.2f}" if len(t_arr) == 1 else "NO RUNS")
+    ttft_str = f"{ttft_m:.2f} +/- {ttft_ci:.2f} ms" if len(data[key]["ttft_mean"]) > 1 else (f"{ttft_m:.2f} ms" if data[key]["ttft_mean"] else "N/A")
+    
+    print(f" {label:<44} | {t_str:<28} | {delta_str:<10} | {ttft_str:<20} | {sched_str:<14}")
+    
+    summary_out[key] = {
+        "label": label,
+        "throughput_mean": m,
+        "throughput_ci95": ci95,
+        "throughput_sd": s,
+        "delta_percent": delta_str,
+        "ttft_mean": ttft_m,
+        "ttft_ci95": ttft_ci,
+        "sched_invol_per_1k": sched_m
+    }
 
-print("=" * 120)
+print("=" * 132)
 print(" Mechanistic Deductions:")
 print(" 1. If Target E ('Neither') achieves ~1430 tok/s: The speedup is from slot recycling/context optimizations.")
 print(" 2. If Target E drops to ~1156 tok/s: Lock-free queueing is verified as the true bottleneck.")
 print(" 3. If Target S (Scheduler Pinned) jumps to ~1430 tok/s: The bottleneck is main loop thread starvation.")
-print("=" * 120 + "\n")
+print("=" * 132 + "\n")
+
+with open("gold_ablation_rigorous_summary.json", "w") as fp:
+    json.dump(summary_out, fp, indent=2)
+print("Saved summary to gold_ablation_rigorous_summary.json")
 PYCODE
 
 echo "Rigorous Mechanistic Ablation Finished Successfully!"

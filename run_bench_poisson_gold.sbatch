@@ -3,7 +3,7 @@
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=32
-#SBATCH --time=04:30:00
+#SBATCH --time=09:30:00
 #SBATCH --output=gold_poisson_%j.log
 #SBATCH --error=gold_poisson_%j.err
 
@@ -113,6 +113,19 @@ echo ">>> [7/8] Saturated Overload: 24.0 req/s (10 Paired Trials)..."
 echo ">>> [8/8] Severe Overload: 26.0 req/s (10 Paired Trials)..."
 ./bench_gold.sh -r 26.0 -n 128 -k 0.0 -s 16 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
 
+./bench_gold.sh -r 28.0 -n 128 -k 0.0 -s 16 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
+
+./bench_gold.sh -r 30.0 -n 128 -k 0.0 -s 16 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
+
+./bench_gold.sh -r 32.0 -n 128 -k 0.0 -s 16 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
+
+./bench_gold.sh -r 34.0 -n 128 -k 0.0 -s 16 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
+
+./bench_gold.sh -r 36.0 -n 128 -k 0.0 -s 16 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
+
+./bench_gold.sh -r 38.0 -n 128 -k 0.0 -s 16 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
+
+./bench_gold.sh -r 40.0 -n 128 -k 0.0 -s 16 -p $BENCH_PORT -m "$MODEL_FILE" --trials 10 --no-build
 echo "================================================================================"
 echo " Dense Poisson Knee Benchmark Suite Finished Successfully!"
 echo "================================================================================"
