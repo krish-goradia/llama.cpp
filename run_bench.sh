@@ -83,6 +83,14 @@ while [[ $# -gt 0 ]]; do
       DO_BUILD=false
       shift
       ;;
+    --seed)
+      SEED="$2"
+      shift 2
+      ;;
+    --threads-http)
+      THREADS_HTTP="$2"
+      shift 2
+      ;;
     --json-out)
       JSON_OUT="$2"
       shift 2
@@ -92,7 +100,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -h|--help)
-      echo "Usage: ./run_bench.sh [-c CONCURRENCY] [-n REQUESTS] [-k|--cancel|--cancel-rate RATE] [--max-tokens TOKENS] [-m MODEL] [-s SLOTS] [-p PORT] [--ctx CTX] [--no-build] [--keep-server]"
+      echo "Usage: ./run_bench.sh [-c CONCURRENCY] [-n REQUESTS] [-k|--cancel|--cancel-rate RATE] [--max-tokens TOKENS] [-m MODEL] [-s SLOTS] [-p PORT] [--ctx CTX] [--threads-http N] [--no-build] [--keep-server]"
       exit 0
       ;;
     *)
@@ -125,12 +133,44 @@ if [ "$RESTART_SERVER" = true ]; then
   pkill -9 -f "llama-server" 2>/dev/null || true
   sleep 1
 
-  # Launch server in background
-  ./build/bin/llama-server \
+  # Launch server in background (with optional core pinning / numactl)
+  SERVER_PREFIX=""
+  if [ -n "$SERVER_PREFIX_OVERRIDE" ]; then
+    SERVER_PREFIX="$SERVER_PREFIX_OVERRIDE"
+    echo "Server Launcher Override: $SERVER_PREFIX"
+  elif [ "$PIN_CORES" = "true" ] && command -v taskset &>/dev/null; then
+    # Dynamically validate or discover permitted cgroup cores
+    if [ -z "$SERVER_CORES" ] || [ -z "$CLIENT_CORES" ] || ! taskset -c "$SERVER_CORES" true 2>/dev/null; then
+      eval "$(python3 -c "
+import os
+try:
+    cpus = sorted(list(os.sched_getaffinity(0)))
+except AttributeError:
+    cpus = list(range(32))
+half = len(cpus) // 2
+srv = ','.join(map(str, cpus[:half]))
+cli = ','.join(map(str, cpus[half:]))
+print(f'export SERVER_CORES=\"{srv}\"')
+print(f'export CLIENT_CORES=\"{cli}\"')
+" 2>/dev/null || true)"
+    fi
+    SERVER_PREFIX="taskset -c $SERVER_CORES"
+    echo "Core Pinning: Pinning server to cores $SERVER_CORES"
+  fi
+
+  HTTP_THREADS_ARG=""
+  if [ -n "$THREADS_HTTP" ]; then
+    HTTP_THREADS_ARG="--threads-http $THREADS_HTTP"
+    echo "Configured HTTP Threads: $THREADS_HTTP"
+  fi
+
+  $SERVER_PREFIX ./build/bin/llama-server \
     -m "$MODEL_PATH" \
     -c "$CTX" \
     -np "$SLOTS" \
-    --port "$PORT" > "$SERVER_LOG" 2>&1 &
+    --port "$PORT" \
+    $HTTP_THREADS_ARG \
+    ${SERVER_EXTRA_ARGS:-} > "$SERVER_LOG" 2>&1 &
   
   SERVER_PID=$!
   echo "Server started with PID: $SERVER_PID (logs at $SERVER_LOG)"
@@ -184,7 +224,32 @@ if [ -n "$RATE" ] && [ "$RATE" != "0.0" ] && [ "$RATE" != "0" ]; then
   RATE_ARG="--rate $RATE"
 fi
 
-python3 tools/server/bench/bench_concurrency.py \
+SEED_ARG=""
+if [ -n "$SEED" ]; then
+  SEED_ARG="--seed $SEED"
+fi
+
+CLIENT_PREFIX=""
+if [ -n "$CLIENT_PREFIX_OVERRIDE" ]; then
+  CLIENT_PREFIX="$CLIENT_PREFIX_OVERRIDE"
+  echo "Client Launcher Override: $CLIENT_PREFIX"
+elif [ "$PIN_CORES" = "true" ] && command -v taskset &>/dev/null; then
+  if [ -z "$CLIENT_CORES" ] || ! taskset -c "$CLIENT_CORES" true 2>/dev/null; then
+    eval "$(python3 -c "
+import os
+try:
+    cpus = sorted(list(os.sched_getaffinity(0)))
+except AttributeError:
+    cpus = list(range(32))
+half = len(cpus) // 2
+cli = ','.join(map(str, cpus[half:]))
+print(f'export CLIENT_CORES=\"{cli}\"')
+" 2>/dev/null || true)"
+  fi
+  CLIENT_PREFIX="taskset -c $CLIENT_CORES"
+fi
+
+$CLIENT_PREFIX python3 tools/server/bench/bench_concurrency.py \
   --url "http://localhost:${PORT}" \
   -c "$CONCURRENCY" \
   -n "$REQUESTS" \
@@ -192,4 +257,6 @@ python3 tools/server/bench/bench_concurrency.py \
   --cancel-rate "$CANCEL_RATE" \
   $JSON_ARG \
   $DURATION_ARG \
-  $RATE_ARG
+  $RATE_ARG \
+  $SEED_ARG \
+  $EXTRA_BENCH_ARGS

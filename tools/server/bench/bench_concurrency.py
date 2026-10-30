@@ -220,6 +220,7 @@ def run_benchmark(
     cancel_rate,
     warmup_requests=2,
     json_out=None,
+    seed=None,
 ):
     is_open_loop = arrival_rate > 0.0
     is_duration_based = duration > 0.0
@@ -236,6 +237,8 @@ def run_benchmark(
     print(f" Max Tokens     : {max_tokens}")
     print(f" Cancel Rate    : {cancel_rate * 100:.1f}%")
     print(f" Warmup Requests: {warmup_requests} (discarded)")
+    if seed is not None:
+        print(f" Random Seed    : {seed} (Common Random Numbers)")
     print("------------------------------------------------------------------")
 
     # Step 0: Prime server
@@ -246,6 +249,9 @@ def run_benchmark(
 
     results = []
     t_start = time.perf_counter()
+
+    # Deterministic RNG for Common Random Numbers (CRN)
+    prng = random.Random(seed) if seed is not None else random.Random()
 
     if is_open_loop:
         # ----------------------------------------------------------------------
@@ -266,14 +272,14 @@ def run_benchmark(
                     break
 
                 # Sample exponential inter-arrival interval
-                interval = random.expovariate(arrival_rate)
+                interval = prng.expovariate(arrival_rate)
                 cur_scheduled += interval
 
                 delay = cur_scheduled - time.perf_counter()
                 if delay > 0:
                     time.sleep(delay)
 
-                should_cancel = (random.random() < cancel_rate)
+                should_cancel = (prng.random() < cancel_rate)
                 futures.append(
                     executor.submit(
                         send_streaming_request,
@@ -301,6 +307,7 @@ def run_benchmark(
         shared_counter = [0]
 
         def worker_loop(client_id):
+            client_prng = random.Random(seed + client_id if seed is not None else None)
             while not stop_event.is_set():
                 if time.perf_counter() - t_start >= duration:
                     stop_event.set()
@@ -308,7 +315,7 @@ def run_benchmark(
                 with counter_lock:
                     rid = shared_counter[0]
                     shared_counter[0] += 1
-                should_cancel = (random.random() < cancel_rate)
+                should_cancel = (client_prng.random() < cancel_rate)
                 m = send_streaming_request(
                     server_url=server_url,
                     prompt=prompt,
@@ -438,15 +445,16 @@ def run_benchmark(
 
 def main():
     parser = argparse.ArgumentParser(description="llama.cpp server concurrency and latency benchmark")
-    parser.add_argument("--url", type=str, default="http://localhost:8080", help="Server base URL")
+    parser.add_argument("--url", "--base-url", dest="url", type=str, default="http://localhost:8080", help="Server base URL")
     parser.add_argument("-c", "--concurrency", type=int, default=8, help="Number of concurrent clients (closed loop)")
-    parser.add_argument("-n", "--requests", type=int, default=32, help="Total requests to submit (when duration=0)")
+    parser.add_argument("-n", "--requests", "--num-requests", dest="requests", type=int, default=32, help="Total requests to submit (when duration=0)")
     parser.add_argument("-d", "--duration", type=float, default=0.0, help="Sustained test duration in seconds (0 = fixed request count)")
     parser.add_argument("-r", "--rate", type=float, default=0.0, help="Target request arrival rate (Poisson open-loop lambda in req/s)")
     parser.add_argument("--max-tokens", type=int, default=64, help="Max tokens per completion")
     parser.add_argument("--prompt", type=str, default="Explain the theory of relativity in simple terms.", help="Prompt text")
     parser.add_argument("-k", "--cancel", "--cancel-rate", dest="cancel_rate", type=float, default=0.0, help="Probability of client aborting connection mid-generation [0.0 - 1.0]")
     parser.add_argument("--warmup", type=int, default=2, help="Number of discarded warmup requests to prime CUDA context")
+    parser.add_argument("--seed", type=int, default=None, help="Random seed for Common Random Numbers (CRN)")
     parser.add_argument("--json-out", type=str, default=None, help="Path to write JSON benchmark metrics")
 
     args = parser.parse_args()
@@ -461,6 +469,7 @@ def main():
         cancel_rate=args.cancel_rate,
         warmup_requests=args.warmup,
         json_out=args.json_out,
+        seed=args.seed,
     )
 
 

@@ -163,3 +163,12 @@ my_documentation/
 *.tar.gz
 profiles_mac/
 *.patch
+.agents/
+.matplotlib/
+profiles/
+figures/
+scratch/
+*.md
+*.png
+tools/server/bench/*.py
+tools/server/bench/*.txt

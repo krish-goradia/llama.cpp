@@ -40,6 +40,14 @@ int server_queue::post(server_task && task, bool front) {
         }
         condition_tasks.notify_one();
     } else {
+#if defined(LLAMA_SERVER_DISABLE_MPSC)
+        std::unique_lock<std::mutex> lock(mutex_tasks);
+        queue_tasks.push(std::move(task));
+        if (reset_timer) {
+            time_last_task = ggml_time_ms();
+        }
+        condition_tasks.notify_one();
+#else
         queue_tasks.push(std::move(task));
         {
             std::unique_lock<std::mutex> lock(mutex_tasks);
@@ -48,6 +56,7 @@ int server_queue::post(server_task && task, bool front) {
             }
             condition_tasks.notify_one();
         }
+#endif
     }
     return task_id;
 }
@@ -341,6 +350,17 @@ void server_queue::yield_to_queue(std::function<void()> && work) {
 void server_queue::start_loop(int64_t idle_sleep_ms) {
     running = true;
     time_last_task = ggml_time_ms();
+
+#if defined(LLAMA_SERVER_DISABLE_MPSC)
+    QUE_INF("%s", "task queue ingress: Mutex-protected std::deque (LLAMA_SERVER_DISABLE_MPSC=ON)\n");
+#else
+    QUE_INF("%s", "task queue ingress: Lock-free Vyukov MPSC node queue (LLAMA_SERVER_DISABLE_MPSC=OFF)\n");
+#endif
+#if defined(LLAMA_SERVER_DISABLE_SPSC)
+    QUE_INF("%s", "response egress: Mutex-serialized channels (LLAMA_SERVER_DISABLE_SPSC=ON)\n");
+#else
+    QUE_INF("%s", "response egress: Lock-free SPSC ring buffer channels (LLAMA_SERVER_DISABLE_SPSC=OFF)\n");
+#endif
 
     // spawn the worker thread used by yield_to_queue()
     GGML_ASSERT(!worker.thread.joinable() && "start_loop() is already running");

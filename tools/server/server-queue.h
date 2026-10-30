@@ -160,10 +160,20 @@ struct response_channel {
     std::condition_variable cv;
     std::atomic<bool> closed{false};
 
+#if defined(LLAMA_SERVER_DISABLE_SPSC)
+    static std::mutex & get_global_resp_mutex() {
+        static std::mutex global_mtx;
+        return global_mtx;
+    }
+#endif
+
     bool push_and_notify(server_task_result_ptr && res) {
         if (closed.load(std::memory_order_relaxed)) {
             return false;
         }
+#if defined(LLAMA_SERVER_DISABLE_SPSC)
+        std::lock_guard<std::mutex> global_lock(get_global_resp_mutex());
+#endif
         if (!ring.try_push(std::move(res))) {
             // channel full: client is too slow or stalled
             close();
@@ -177,11 +187,17 @@ struct response_channel {
     }
 
     server_task_result_ptr pop_wait(int timeout_seconds) {
+#if defined(LLAMA_SERVER_DISABLE_SPSC)
+        std::unique_lock<std::mutex> global_lock(get_global_resp_mutex());
+#endif
         server_task_result_ptr res;
         if (ring.try_pop(res)) {
             return res;
         }
         std::unique_lock<std::mutex> lock(mtx);
+#if defined(LLAMA_SERVER_DISABLE_SPSC)
+        global_lock.unlock();
+#endif
         cv.wait_for(lock, std::chrono::seconds(timeout_seconds), [&] {
             return ring.try_pop(res) || closed.load(std::memory_order_relaxed);
         });

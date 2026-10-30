@@ -1,4 +1,13 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+option(LLAMA_SERVER_DISABLE_MPSC "Disable lock-free MPSC queue" OFF)
+option(LLAMA_SERVER_DISABLE_SPSC "Disable lock-free SPSC channels" OFF)
+
+if (LLAMA_SERVER_DISABLE_MPSC)
+    add_compile_definitions(LLAMA_SERVER_DISABLE_MPSC)
+endif()
+
+if (LLAMA_SERVER_DISABLE_SPSC)
+    add_compile_definitions(LLAMA_SERVER_DISABLE_SPSC)
+endif()
 
 # server-context containing the core server logic, used by llama-server and CLI
 
